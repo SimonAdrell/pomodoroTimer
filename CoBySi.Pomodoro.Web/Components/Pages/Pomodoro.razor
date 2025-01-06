@@ -1,0 +1,73 @@
+﻿@* @page "/pomodoro" *@
+@using CoBySi.Pomodoro.Timer
+@using Serilog
+@rendermode InteractiveServer
+<div class="mb-3">
+    <h2>@pomodoroState</h2>
+    <div class="rounded-circle ">
+        <h1>
+            @currentMinutesSeconds
+        </h1>
+    </div>
+    @switch (pomodoroState)
+    {
+        case PomodoroState.Work:
+            <button class="btn btn-primary" @onclick="PausPomdoro">Paus</button>
+            break;
+        case PomodoroState.ShortBreak:
+            <button class="btn btn-primary" @onclick="StartPomdoro">Resume</button>
+            break;
+        case PomodoroState.LongBreak:
+            <button class="btn btn-primary" @onclick="StartPomdoro">Resume</button>
+            break;
+        case PomodoroState.Paused:
+            <button class="btn btn-primary" @onclick="StartPomdoro">Resume</button>
+            break;
+        case PomodoroState.NotStarted:
+        default:
+            <button class="btn btn-primary" @onclick="StartPomdoro">Start</button>
+            break;
+    }
+</div>
+@code {
+    private string currentMinutesSeconds = "00:00";
+    private PomodoroState pomodoroState = PomodoroState.NotStarted;
+    private readonly IPomodorHandler _pomodorHandler;
+
+    public Pomodoro(PomodoroSettings pomodoroSettings)
+    {
+        _pomodorHandler = new PomodorHandler(pomodoroSettings);
+        _pomodorHandler.ElapsedTimeChanged += PomodorHandler_ElapsedTimeChanged;
+    }
+
+    private void StartPomdoro()
+    {
+        _pomodorHandler.Start();
+        Log.Information("Pomodoro started");
+    }
+    private void PausPomdoro()
+    {
+        _pomodorHandler.Pause();
+        Log.Information("Pomodoro Stoped");
+    }
+
+    private void StopPomodoro()
+    {
+        _pomodorHandler.Stop();
+        Log.Information("Pomodoro Stoped");
+    }
+    private void PomodorHandler_ElapsedTimeChanged(object? sender, TimeChangedEventArgs e)
+    {
+        Log.Information("Pomodoro changed state {state}", e.State);
+        currentMinutesSeconds = ConvertTimeSpanToMinutesSeconds(e.NumberOfSeconds);
+        pomodoroState = e.State;
+        this.InvokeAsync(() => StateHasChanged());
+    }
+
+    private string ConvertTimeSpanToMinutesSeconds(double numberOfSeconds)
+    {
+        var timeSpan = TimeSpan.FromSeconds(numberOfSeconds);
+        return $"{timeSpan.Minutes:D2}:{timeSpan.Seconds:D2}";
+    }
+
+}
