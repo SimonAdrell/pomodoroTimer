@@ -28,6 +28,8 @@ builder.Services.AddSingleton(sp =>
     return settings;
 });
 
+builder.Services.AddSingleton(TimeProvider.System);
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

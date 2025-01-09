@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoBySi.Pomodoro", "CoBySi.P
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoBySi.Pomodoro.Web", "CoBySi.Pomodoro.Web\CoBySi.Pomodoro.Web.csproj", "{324B33E3-0059-45B2-8D02-6D5E29599577}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoBySi.Pomodoro.Tests", "Tests\CoBySi.Pomodoro.Tests\CoBySi.Pomodoro.Tests.csproj", "{17F537CD-3B95-4B11-BA9D-453964517505}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,11 +37,16 @@ Global
 		{324B33E3-0059-45B2-8D02-6D5E29599577}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{324B33E3-0059-45B2-8D02-6D5E29599577}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{324B33E3-0059-45B2-8D02-6D5E29599577}.Release|Any CPU.Build.0 = Release|Any CPU
+		{17F537CD-3B95-4B11-BA9D-453964517505}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{17F537CD-3B95-4B11-BA9D-453964517505}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{17F537CD-3B95-4B11-BA9D-453964517505}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{17F537CD-3B95-4B11-BA9D-453964517505}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{C02C8A37-D428-4FF7-8B4F-6B605EE5C2B0} = {E6E89E8C-128E-47F3-8CB7-BA76614FDD7E}
+		{17F537CD-3B95-4B11-BA9D-453964517505} = {E6E89E8C-128E-47F3-8CB7-BA76614FDD7E}
 	EndGlobalSection
 EndGlobal

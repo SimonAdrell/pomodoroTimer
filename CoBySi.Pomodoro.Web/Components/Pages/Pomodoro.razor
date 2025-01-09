@@ -22,7 +22,6 @@
     private IPomodorHandler? _pomodorHandler;
     private readonly IPomdoroPropertiesHandler? _pomdoroPropertiesHandler;
     private PomodoroSettings? _pomodoroSettings;
-    private int _secondsElapsed;
     private int _breakCount;
     public Pomodoro(IPomdoroPropertiesHandler pomdoroPropertiesHandler)
     {
@@ -35,7 +34,7 @@
             throw new ArgumentNullException(nameof(_pomdoroPropertiesHandler));
 
         _pomodoroSettings = await _pomdoroPropertiesHandler.GetPomodoroPropertiesAsync(Guid.Empty);
-        _pomodorHandler = new PomodorHandler(_pomodoroSettings);
+        _pomodorHandler = new PomodorHandler(_pomodoroSettings, TimeProvider.System);
     }
     private void StartPomdoro()
     {
@@ -67,7 +66,7 @@
     }
     private void PomodorHandler_ElapsedTimeChanged(object? sender, TimeChangedEventArgs e)
     {
-        currentMinutesSeconds = ConvertTimeSpanToMinutesSeconds(e.NumberOfSecondsElapsed);
+        currentMinutesSeconds = ConvertTimeSpanToMinutesSeconds(e.NumberOfSecondsLeft);
         this.InvokeAsync(() => StateHasChanged());
     }
 
