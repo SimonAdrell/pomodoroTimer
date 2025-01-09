@@ -1,5 +1,3 @@
-using System;
-
 namespace CoBySi.Pomodoro.Web.PomodoroProperties;
 
 public interface IPomdoroPropertiesHandler

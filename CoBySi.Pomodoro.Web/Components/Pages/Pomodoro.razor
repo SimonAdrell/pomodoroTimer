@@ -1,73 +1,140 @@
-﻿@* @page "/pomodoro" *@
-@using CoBySi.Pomodoro.Timer
+﻿@using CoBySi.Pomodoro.Timer
+@using CoBySi.Pomodoro.Web.PomodoroProperties
 @using Serilog
 @rendermode InteractiveServer
-<div class="mb-3">
-    <h2>@pomodoroState</h2>
-    <div class="rounded-circle ">
-        <h1>
+<div class="mb-3 d-flex flex-column align-items-center align-self-center" data-bs-theme="dark">
+    <div class="rounded-circle bg-primary text-white d-flex flex-column justify-content-center align-items-center"
+        style="width: 200px; height: 200px;">
+        <h1 class="display-3">
             @currentMinutesSeconds
         </h1>
+        <h4>@_pomodoroState</h4>
     </div>
-    @switch (pomodoroState)
-    {
-        case PomodoroState.Work:
-            <button class="btn btn-primary" @onclick="PausPomdoro">Paus</button>
-            break;
-        case PomodoroState.ShortBreak:
-            <button class="btn btn-primary" @onclick="StartPomdoro">Resume</button>
-            break;
-        case PomodoroState.LongBreak:
-            <button class="btn btn-primary" @onclick="StartPomdoro">Resume</button>
-            break;
-        case PomodoroState.Paused:
-            <button class="btn btn-primary" @onclick="StartPomdoro">Resume</button>
-            break;
-        case PomodoroState.NotStarted:
-        default:
-            <button class="btn btn-primary" @onclick="StartPomdoro">Start</button>
-            break;
-    }
+    <h4>@_breakCount pomodoros</h4>
+    <div>
+        <button class="btn btn-primary" @onclick="StartPomdoro">Start</button>
+        <button class="btn btn-primary" @onclick="StopPomodoro">Stop</button>
+    </div>
 </div>
 @code {
-    private string currentMinutesSeconds = "00:00";
-    private PomodoroState pomodoroState = PomodoroState.NotStarted;
-    private readonly IPomodorHandler _pomodorHandler;
-
-    public Pomodoro(PomodoroSettings pomodoroSettings)
+    private string? currentMinutesSeconds;
+    private PomodoroState _pomodoroState = PomodoroState.Pomodoro;
+    private IPomodorHandler? _pomodorHandler;
+    private readonly IPomdoroPropertiesHandler? _pomdoroPropertiesHandler;
+    private PomodoroSettings? _pomodoroSettings;
+    private int _secondsElapsed;
+    private int _breakCount;
+    public Pomodoro(IPomdoroPropertiesHandler pomdoroPropertiesHandler)
     {
-        _pomodorHandler = new PomodorHandler(pomodoroSettings);
-        _pomodorHandler.ElapsedTimeChanged += PomodorHandler_ElapsedTimeChanged;
+        _pomdoroPropertiesHandler = pomdoroPropertiesHandler;
     }
 
+    protected override async Task OnInitializedAsync()
+    {
+        if (_pomdoroPropertiesHandler == null)
+            throw new ArgumentNullException(nameof(_pomdoroPropertiesHandler));
+
+        _pomodoroSettings = await _pomdoroPropertiesHandler.GetPomodoroPropertiesAsync(Guid.Empty);
+        _pomodorHandler = new PomodorHandler(_pomodoroSettings);
+    }
     private void StartPomdoro()
     {
-        _pomodorHandler.Start();
-        Log.Information("Pomodoro started");
-    }
-    private void PausPomdoro()
-    {
-        _pomodorHandler.Pause();
-        Log.Information("Pomodoro Stoped");
+        _pomodorHandler?.Start(_pomodoroState);
+        StartListener();
     }
 
     private void StopPomodoro()
     {
-        _pomodorHandler.Stop();
-        Log.Information("Pomodoro Stoped");
+        _pomodorHandler?.Stop();
+        StopListener();
+    }
+
+    private void StartListener()
+    {
+        if (_pomodorHandler == null)
+            throw new ArgumentNullException(nameof(_pomodorHandler));
+
+        _pomodorHandler.ElapsedTimeChanged += PomodorHandler_ElapsedTimeChanged;
+        _pomodorHandler.TimerFinished += PomodorHandler_TimerFinished;
+    }
+    private void StopListener()
+    {
+        if (_pomodorHandler == null)
+            throw new ArgumentNullException(nameof(_pomodorHandler));
+
+        _pomodorHandler.ElapsedTimeChanged -= PomodorHandler_ElapsedTimeChanged;
+        _pomodorHandler.TimerFinished -= PomodorHandler_TimerFinished;
     }
     private void PomodorHandler_ElapsedTimeChanged(object? sender, TimeChangedEventArgs e)
     {
-        Log.Information("Pomodoro changed state {state}", e.State);
-        currentMinutesSeconds = ConvertTimeSpanToMinutesSeconds(e.NumberOfSeconds);
-        pomodoroState = e.State;
+        currentMinutesSeconds = ConvertTimeSpanToMinutesSeconds(e.NumberOfSecondsElapsed);
         this.InvokeAsync(() => StateHasChanged());
     }
 
-    private string ConvertTimeSpanToMinutesSeconds(double numberOfSeconds)
+    private void PomodorHandler_TimerFinished(object? sender, TimerFinishedEventArgs e)
     {
-        var timeSpan = TimeSpan.FromSeconds(numberOfSeconds);
+        StopListener();
+        switch (e.StateFinished)
+        {
+            case PomodoroState.Pomodoro:
+                PomodoroFinished();
+                break;
+            case PomodoroState.ShortBreak:
+                _breakCount++;
+                ChangePomodoroState(PomodoroState.Pomodoro, _pomodoroSettings);
+                break;
+            case PomodoroState.LongBreak:
+                ChangePomodoroState(PomodoroState.Pomodoro, _pomodoroSettings);
+                break;
+        }
+        this.InvokeAsync(() => StateHasChanged());
+    }
+
+    private void PomodoroFinished()
+    {
+        if (_breakCount >= _pomodoroSettings?.PomodorosBeforeLongBreak)
+        {
+            ChangePomodoroState(PomodoroState.LongBreak, _pomodoroSettings);
+            _breakCount = 0;
+        }
+        ChangePomodoroState(PomodoroState.ShortBreak, _pomodoroSettings);
+    }
+    private static string ConvertTimeSpanToMinutesSeconds(double? numberOfSeconds)
+    {
+        if (numberOfSeconds == null)
+            return "00:00";
+
+        var timeSpan = TimeSpan.FromSeconds(numberOfSeconds.Value);
         return $"{timeSpan.Minutes:D2}:{timeSpan.Seconds:D2}";
     }
 
+    private void ChangePomodoroState(PomodoroState newState, PomodoroSettings? settings)
+    {
+        if (settings == null)
+            throw new ArgumentNullException(nameof(settings));
+
+        _pomodoroState = newState;
+        currentMinutesSeconds = GetTotalNumberOfSeconds(newState, settings) ?? "00:00";
+    }
+
+    private static string? GetTotalNumberOfSeconds(PomodoroState state, PomodoroSettings settings)
+    {
+        string? currentMinutesSeconds = null;
+        switch (state)
+        {
+            case PomodoroState.Pomodoro:
+                currentMinutesSeconds =
+                ConvertTimeSpanToMinutesSeconds(TimeSpan.FromMinutes(settings.MinutesPerPomodoro).TotalSeconds);
+                break;
+            case PomodoroState.ShortBreak:
+                currentMinutesSeconds =
+                ConvertTimeSpanToMinutesSeconds(TimeSpan.FromMinutes(settings.MinutesPerShortBreak).TotalSeconds);
+                break;
+            case PomodoroState.LongBreak:
+                currentMinutesSeconds =
+                ConvertTimeSpanToMinutesSeconds(TimeSpan.FromMinutes(settings.MinutesPerLongBreak).TotalSeconds);
+                break;
+        }
+        return currentMinutesSeconds;
+    }
 }

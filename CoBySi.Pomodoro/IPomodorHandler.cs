@@ -5,9 +5,7 @@ namespace CoBySi.Pomodoro;
 public interface IPomodorHandler
 {
     event EventHandler<TimeChangedEventArgs>? ElapsedTimeChanged;
-    void Start();
-    void Pause();
-    void Resume();
+    event EventHandler<TimerFinishedEventArgs>? TimerFinished;
+    void Start(PomodoroState pomodoroState);
     void Stop();
-
 }

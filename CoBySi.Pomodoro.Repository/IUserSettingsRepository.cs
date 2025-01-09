@@ -1,4 +1,3 @@
-using System;
 using CoBySi.Pomodoro.Repository.Models;
 
 namespace CoBySi.Pomodoro.Repository;

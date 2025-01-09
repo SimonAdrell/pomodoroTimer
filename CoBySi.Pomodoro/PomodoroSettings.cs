@@ -1,5 +1,3 @@
-using System;
-
 namespace CoBySi.Pomodoro;
 
 public class PomodoroSettings

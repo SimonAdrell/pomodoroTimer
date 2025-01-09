@@ -1,6 +1,7 @@
 using CoBySi.Pomodoro;
 using CoBySi.Pomodoro.Repository;
 using CoBySi.Pomodoro.Web.Components;
+using CoBySi.Pomodoro.Web.PomodoroProperties;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,7 +10,7 @@ Log.Logger = new LoggerConfiguration()
             .WriteTo.Console()
             .CreateLogger();
 
-Log.Information("Hello, world!");
+Log.Information("Starting {application}", "CoBySi.Pomodoro.Web");
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
@@ -17,6 +18,15 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddSingleton<IPomodorHandler, PomodorHandler>();
 builder.Services.AddSingleton<IUserSettingsRepository, UserSettingsRepository>();
+builder.Services.AddSingleton<IPomdoroPropertiesHandler, PomdoroPropertiesHandler>();
+
+var confg = builder.Configuration;
+builder.Services.AddSingleton(sp =>
+{
+    var settings = new PomodoroSettings();
+    confg.GetSection("PomodoroSettings").Bind(settings);
+    return settings;
+});
 
 var app = builder.Build();
 

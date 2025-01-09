@@ -2,10 +2,7 @@ namespace CoBySi.Pomodoro.Timer;
 
 public enum PomodoroState
 {
-    NotStarted,
-    Work,
+    Pomodoro,
     ShortBreak,
     LongBreak,
-    Paused,
-    Completed
 }

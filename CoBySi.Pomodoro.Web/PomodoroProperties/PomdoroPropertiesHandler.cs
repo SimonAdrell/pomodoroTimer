@@ -1,4 +1,3 @@
-using System;
 using CoBySi.Pomodoro.Repository;
 using CoBySi.Pomodoro.Web.Converter;
 
