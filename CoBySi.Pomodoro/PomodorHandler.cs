@@ -1,4 +1,3 @@
-using System.Timers;
 using CoBySi.Pomodoro.Timer;
 using Serilog;
 
@@ -53,7 +52,7 @@ public class PomodorHandler : IPomodorHandler
         _pomodoroTimer?.Change(Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
     }
 
-    private static double? GetTotalNumberOfSeconds(PomodoroState pomodoroState, PomodoroSettings pomodoroSettings)
+    public static double? GetTotalNumberOfSeconds(PomodoroState pomodoroState, PomodoroSettings pomodoroSettings)
     {
         return pomodoroState switch
         {
