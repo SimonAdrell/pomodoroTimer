@@ -2,19 +2,24 @@
 @using CoBySi.Pomodoro.Web.PomodoroProperties
 @using Serilog
 @rendermode InteractiveServer
-<div class="mb-3 d-flex flex-column align-items-center align-self-center" data-bs-theme="dark">
-    <div class="rounded-circle bg-primary text-white d-flex flex-column justify-content-center align-items-center"
-        style="width: 200px; height: 200px;">
+<div class="mb-3 d-flex mt-5 flex-column align-items-center align-self-center" data-bs-theme="dark">
+    <div class="rounded-circle border border-success border-3 d-flex flex-column justify-content-center align-items-center"
+        style="width: 300px; height: 300px;">
         <h1 class="display-3">
             @currentMinutesSeconds
         </h1>
-        <h4>@_pomodoroState</h4>
+        @* <h4>@_pomodoroState</h4> *@
+        <div class=" flex-row d-flex mt-2">
+            <div class=" p-2">
+                <button class="btn btn-link" @onclick="StartPomdoro">Start</button>
+            </div>
+            <div class="p-2 border-start border-success-emphasis border-3">
+                <button class="btn btn-link" @onclick="StopPomodoro">Stop</button>
+            </div>
+        </div>
     </div>
-    <h4>@_breakCount pomodoros</h4>
-    <div>
-        <button class="btn btn-primary" @onclick="StartPomdoro">Start</button>
-        <button class="btn btn-primary" @onclick="StopPomodoro">Stop</button>
-    </div>
+    @* <h4>@_breakCount pomodoros</h4> *@
+
 </div>
 @code {
     private string? currentMinutesSeconds;
@@ -22,7 +27,6 @@
     private IPomodorHandler? _pomodorHandler;
     private readonly IPomdoroPropertiesHandler? _pomdoroPropertiesHandler;
     private PomodoroSettings? _pomodoroSettings;
-    private int _secondsElapsed;
     private int _breakCount;
     public Pomodoro(IPomdoroPropertiesHandler pomdoroPropertiesHandler)
     {
@@ -35,21 +39,23 @@
             throw new ArgumentNullException(nameof(_pomdoroPropertiesHandler));
 
         _pomodoroSettings = await _pomdoroPropertiesHandler.GetPomodoroPropertiesAsync(Guid.Empty);
-        _pomodorHandler = new PomodorHandler(_pomodoroSettings);
+        currentMinutesSeconds =
+        ConvertTimeSpanToMinutesSeconds(TimeSpan.FromMinutes(_pomodoroSettings.MinutesPerPomodoro).TotalSeconds);
+        _pomodorHandler = new PomodorHandler(_pomodoroSettings, TimeProvider.System);
     }
     private void StartPomdoro()
     {
         _pomodorHandler?.Start(_pomodoroState);
-        StartListener();
+        StartListeners();
     }
 
     private void StopPomodoro()
     {
         _pomodorHandler?.Stop();
-        StopListener();
+        StopListeners();
     }
 
-    private void StartListener()
+    private void StartListeners()
     {
         if (_pomodorHandler == null)
             throw new ArgumentNullException(nameof(_pomodorHandler));
@@ -57,7 +63,7 @@
         _pomodorHandler.ElapsedTimeChanged += PomodorHandler_ElapsedTimeChanged;
         _pomodorHandler.TimerFinished += PomodorHandler_TimerFinished;
     }
-    private void StopListener()
+    private void StopListeners()
     {
         if (_pomodorHandler == null)
             throw new ArgumentNullException(nameof(_pomodorHandler));
@@ -67,13 +73,13 @@
     }
     private void PomodorHandler_ElapsedTimeChanged(object? sender, TimeChangedEventArgs e)
     {
-        currentMinutesSeconds = ConvertTimeSpanToMinutesSeconds(e.NumberOfSecondsElapsed);
+        currentMinutesSeconds = ConvertTimeSpanToMinutesSeconds(e.NumberOfSecondsLeft);
         this.InvokeAsync(() => StateHasChanged());
     }
 
     private void PomodorHandler_TimerFinished(object? sender, TimerFinishedEventArgs e)
     {
-        StopListener();
+        StopListeners();
         switch (e.StateFinished)
         {
             case PomodoroState.Pomodoro:
