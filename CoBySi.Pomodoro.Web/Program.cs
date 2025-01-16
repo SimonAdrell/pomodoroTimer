@@ -80,6 +80,9 @@ app.UseAntiforgery();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.MapAdditionalIdentityEndpoints(); ;
 
 app.Run();
