@@ -398,3 +398,9 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# Db data
+mongo-data/
+postgres-data/
+
+Icov.info

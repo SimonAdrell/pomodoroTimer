@@ -3,8 +3,18 @@ using CoBySi.Pomodoro.Repository;
 using CoBySi.Pomodoro.Web.Components;
 using CoBySi.Pomodoro.Web.PomodoroProperties;
 using Serilog;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using CoBySi.Pomodoro.Repository.Identity.Data;
+using CoBySi.Pomodoro.Web.Components.Account;
+using Microsoft.AspNetCore.Components.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
+var connectionString = builder.Configuration.GetConnectionString("postgress") ?? throw new InvalidOperationException("Connection string 'postgress' not found."); ;
+
+builder.Services.AddDbContext<PomodoroAuth>(options => options.UseNpgsql(connectionString));
+
+// builder.Services.AddDefaultIdentity<PomodoroUser>(options => options.SignIn.RequireConfirmedAccount = true).AddEntityFrameworkStores<PomodoroAuth>();
 Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Debug()
             .WriteTo.Console()
@@ -30,6 +40,28 @@ builder.Services.AddSingleton(sp =>
 
 builder.Services.AddSingleton(TimeProvider.System);
 
+builder.Services.AddCascadingAuthenticationState();
+
+builder.Services.AddScoped<IdentityUserAccessor>();
+
+builder.Services.AddScoped<IdentityRedirectManager>();
+
+builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
+
+builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultScheme = IdentityConstants.ApplicationScheme;
+        options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
+    })
+    .AddIdentityCookies();
+
+builder.Services.AddIdentityCore<PomodoroUser>(options => options.SignIn.RequireConfirmedAccount = true)
+    .AddEntityFrameworkStores<PomodoroAuth>()
+    .AddSignInManager()
+    .AddDefaultTokenProviders();
+
+builder.Services.AddSingleton<IEmailSender<PomodoroUser>, IdentityNoOpEmailSender>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -47,5 +79,10 @@ app.UseAntiforgery();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapAdditionalIdentityEndpoints(); ;
 
 app.Run();
