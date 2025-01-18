@@ -6,6 +6,9 @@
 @using System.Text.Encodings.Web
 @using Microsoft.AspNetCore.Identity
 @using CoBySi.Pomodoro.Repository.Identity.Data
+@using QRCoder
+@using System.Drawing
+@using System.Drawing.Imaging
 
 @inject UserManager<PomodoroUser> UserManager
 @inject IdentityUserAccessor UserAccessor
@@ -41,9 +44,8 @@ else
             <li>
                 <p>Scan the QR Code or enter this key <kbd>@sharedKey</kbd> into your two factor authenticator app. Spaces
                     and casing do not matter.</p>
-                <div class="alert alert-info">Learn how to <a href="https://go.microsoft.com/fwlink/?Linkid=852423">enable
-                        QR code generation</a>.</div>
-                <div></div>
+                <div><img alt="" src="@QRByte" width="300" class="mb-5" /></div>
+                <div data-url="@QRByte"></div>
                 <div data-url="@authenticatorUri"></div>
             </li>
             <li>
@@ -74,7 +76,7 @@ else
 
 @code {
     private const string AuthenticatorUriFormat = "otpauth://totp/{0}:{1}?secret={2}&issuer={0}&digits=6";
-
+    public string QRByte = "";
     private string? message;
     private PomodoroUser user = default!;
     private string? sharedKey;
@@ -93,7 +95,19 @@ else
 
         await LoadSharedKeyAndQrCodeUriAsync(user);
     }
-
+    public void GenerateQRCode(string QRUrl)
+    {
+        if (!string.IsNullOrEmpty(QRUrl))
+        {
+            using MemoryStream ms = new();
+            QRCodeGenerator qrCodeGenerate = new();
+            QRCodeData qrCodeData = qrCodeGenerate.CreateQrCode(QRUrl, QRCodeGenerator.ECCLevel.Q);
+            QRCode qrCode = new(qrCodeData);
+            using Bitmap qrBitMap = qrCode.GetGraphic(20); qrBitMap.Save(ms, ImageFormat.Png);
+            string base64 = Convert.ToBase64String(ms.ToArray());
+            QRByte = string.Format("data:image/png;base64,{0}", base64);
+        }
+    }
     private async Task OnValidSubmitAsync()
     {
         // Strip spaces and hyphens
@@ -138,6 +152,7 @@ else
 
         var email = await UserManager.GetEmailAsync(user);
         authenticatorUri = GenerateQrCodeUri(email!, unformattedKey!);
+        GenerateQRCode(authenticatorUri);
     }
 
     private string FormatKey(string unformattedKey)
@@ -162,7 +177,7 @@ else
         return string.Format(
         CultureInfo.InvariantCulture,
         AuthenticatorUriFormat,
-        UrlEncoder.Encode("Microsoft.AspNetCore.Identity.UI"),
+        UrlEncoder.Encode("Pomodoro"),
         UrlEncoder.Encode(email),
         unformattedKey);
     }
