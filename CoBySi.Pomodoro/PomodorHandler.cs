@@ -42,7 +42,6 @@ public class PomodorHandler : IPomodorHandler
             TimerFinished?.Invoke(this, new TimerFinishedEventArgs { StateFinished = _currentState });
         }
         Log.Information("Tick");
-
     }
 
     private void StopTimer()
@@ -50,13 +49,11 @@ public class PomodorHandler : IPomodorHandler
         _pomodoroTimer?.Change(Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
     }
 
-
-
     public void Stop(double? totalNumberOfSeconds)
     {
         StopTimer();
         _secondsElapsed = 0;
         _totalNumberOfSeconds = totalNumberOfSeconds;
-        ElapsedTimeChanged?.Invoke(this, new TimeChangedEventArgs { NumberOfSecondsLeft = _totalNumberOfSeconds - _secondsElapsed, State = _currentState });
+        ElapsedTimeChanged?.Invoke(this, new TimeChangedEventArgs { NumberOfSecondsLeft = totalNumberOfSeconds - _secondsElapsed, State = _currentState });
     }
 }
