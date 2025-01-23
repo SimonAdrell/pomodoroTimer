@@ -9,23 +9,21 @@ public class PomodorHandler : IPomodorHandler
     public event EventHandler<TimerFinishedEventArgs>? TimerFinished;
     private double? _totalNumberOfSeconds { get; set; }
     private PomodoroState _currentState;
-    private PomodoroSettings _pomodoroSettings;
     private TimeProvider _timeProvider;
     private int _secondsElapsed;
     private ITimer? _pomodoroTimer;
 
-    public PomodorHandler(PomodoroSettings pomodoroSettings, TimeProvider timeProvider)
+    public PomodorHandler(TimeProvider timeProvider)
     {
         _timeProvider = timeProvider;
-        _pomodoroSettings = pomodoroSettings;
     }
 
-    public void Start(PomodoroState pomodoroState)
+    public void Start(PomodoroState pomodoroState, double? totalNumberOfSeconds)
     {
         _currentState = pomodoroState;
         _pomodoroTimer = _timeProvider.CreateTimer(TimerCallback, pomodoroState, TimeSpan.Zero, TimeSpan.FromSeconds(1));
         _secondsElapsed = 0;
-        _totalNumberOfSeconds = GetTotalNumberOfSeconds(pomodoroState, _pomodoroSettings);
+        _totalNumberOfSeconds = totalNumberOfSeconds;
         ElapsedTimeChanged?.Invoke(this, new TimeChangedEventArgs { NumberOfSecondsLeft = _totalNumberOfSeconds - _secondsElapsed, State = _currentState });
         Log.Information("Started {State}", _currentState);
     }
@@ -52,21 +50,13 @@ public class PomodorHandler : IPomodorHandler
         _pomodoroTimer?.Change(Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
     }
 
-    public static double? GetTotalNumberOfSeconds(PomodoroState pomodoroState, PomodoroSettings pomodoroSettings)
-    {
-        return pomodoroState switch
-        {
-            PomodoroState.ShortBreak => TimeSpan.FromMinutes(pomodoroSettings.MinutesPerShortBreak).TotalSeconds,
-            PomodoroState.LongBreak => TimeSpan.FromMinutes(pomodoroSettings.MinutesPerLongBreak).TotalSeconds,
-            _ => (double?)TimeSpan.FromMinutes(pomodoroSettings.MinutesPerPomodoro).TotalSeconds,
-        };
-    }
 
-    public void Stop()
+
+    public void Stop(double? totalNumberOfSeconds)
     {
         StopTimer();
         _secondsElapsed = 0;
-        _totalNumberOfSeconds = GetTotalNumberOfSeconds(_currentState, _pomodoroSettings);
+        _totalNumberOfSeconds = totalNumberOfSeconds;
         ElapsedTimeChanged?.Invoke(this, new TimeChangedEventArgs { NumberOfSecondsLeft = _totalNumberOfSeconds - _secondsElapsed, State = _currentState });
     }
 }

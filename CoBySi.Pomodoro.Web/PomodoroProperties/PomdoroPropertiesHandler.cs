@@ -1,5 +1,6 @@
 using CoBySi.Pomodoro.Repository;
 using CoBySi.Pomodoro.Web.Converter;
+using Microsoft.Extensions.Options;
 
 namespace CoBySi.Pomodoro.Web.PomodoroProperties;
 
@@ -8,9 +9,9 @@ public class PomdoroPropertiesHandler : IPomdoroPropertiesHandler
     private readonly PomodoroSettings _pomodoroSettings;
     private readonly IUserSettingsRepository _userSettingsRepository;
 
-    public PomdoroPropertiesHandler(PomodoroSettings pomodoroSettings, IUserSettingsRepository userSettingsRepository)
+    public PomdoroPropertiesHandler(IOptions<PomodoroSettings> pomodoroSettings, IUserSettingsRepository userSettingsRepository)
     {
-        _pomodoroSettings = pomodoroSettings;
+        _pomodoroSettings = pomodoroSettings.Value;
         _userSettingsRepository = userSettingsRepository;
     }
 
