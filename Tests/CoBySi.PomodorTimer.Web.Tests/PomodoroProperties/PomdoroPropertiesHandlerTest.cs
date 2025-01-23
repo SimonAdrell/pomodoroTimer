@@ -2,6 +2,7 @@ using CoBySi.Pomodoro;
 using CoBySi.Pomodoro.Repository;
 using CoBySi.Pomodoro.Repository.Models;
 using CoBySi.Pomodoro.Web.PomodoroProperties;
+using Microsoft.Extensions.Options;
 using NSubstitute;
 using Xunit;
 using Assert = Xunit.Assert;
@@ -22,8 +23,12 @@ public class PomdoroPropertiesHandlerTest
             PomodorosBeforeLongBreak = 4
         };
 
+        var pomodoroSettings = Substitute.For<IOptions<PomodoroSettings>>();
+        pomodoroSettings.Value.Returns(defaultPomodoroSettings);
+
         var stubUserSettingsRepository = Substitute.For<IUserSettingsRepository>();
-        var sut = new PomdoroPropertiesHandler(defaultPomodoroSettings, stubUserSettingsRepository);
+
+        var sut = new PomdoroPropertiesHandler(pomodoroSettings, stubUserSettingsRepository);
 
         // Act
         var response = await sut.GetPomodoroPropertiesAsync(Guid.Empty);
@@ -54,10 +59,12 @@ public class PomdoroPropertiesHandlerTest
             MinutesPerPomodoro = 0,
             PomodorosBeforeLongBreak = 0
         };
+        var pomodoroSettings = Substitute.For<IOptions<PomodoroSettings>>();
+        pomodoroSettings.Value.Returns(defaultPomodoroSettings);
 
         var stubUserSettingsRepository = Substitute.For<IUserSettingsRepository>();
         stubUserSettingsRepository.GetUserPomodoroSettingsAsync(userGuid).Returns(userSettings);
-        var sut = new PomdoroPropertiesHandler(defaultPomodoroSettings, stubUserSettingsRepository);
+        var sut = new PomdoroPropertiesHandler(pomodoroSettings, stubUserSettingsRepository);
 
         // Act
         var response = await sut.GetPomodoroPropertiesAsync(userGuid);

@@ -8,9 +8,13 @@ using Microsoft.EntityFrameworkCore;
 using CoBySi.Pomodoro.Repository.Identity.Data;
 using CoBySi.Pomodoro.Web.Components.Account;
 using Microsoft.AspNetCore.Components.Authorization;
+using CoBySi.Pomodoro.Web.EmailService;
+using CoBySi.Pomodoro.Web.Settings;
 
 var builder = WebApplication.CreateBuilder(args);
-var connectionString = builder.Configuration.GetConnectionString("postgress") ?? throw new InvalidOperationException("Connection string 'postgress' not found."); ;
+
+var connectionString = builder.Configuration.GetConnectionString("postgress")
+    ?? throw new InvalidOperationException("Connection string 'postgress' not found."); ;
 
 builder.Services.AddDbContext<PomodoroAuth>(options => options.UseNpgsql(connectionString));
 
@@ -30,13 +34,9 @@ builder.Services.AddSingleton<IPomodorHandler, PomodorHandler>();
 builder.Services.AddSingleton<IUserSettingsRepository, UserSettingsRepository>();
 builder.Services.AddSingleton<IPomdoroPropertiesHandler, PomdoroPropertiesHandler>();
 
-var confg = builder.Configuration;
-builder.Services.AddSingleton(sp =>
-{
-    var settings = new PomodoroSettings();
-    confg.GetSection("PomodoroSettings").Bind(settings);
-    return settings;
-});
+builder.Services.Configure<PomodoroSettings>(builder.Configuration.GetSection("PomodoroSettings"));
+
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 
 builder.Services.AddSingleton(TimeProvider.System);
 
@@ -60,7 +60,7 @@ builder.Services.AddIdentityCore<PomodoroUser>(options => options.SignIn.Require
     .AddSignInManager()
     .AddDefaultTokenProviders();
 
-builder.Services.AddSingleton<IEmailSender<PomodoroUser>, IdentityNoOpEmailSender>();
+builder.Services.AddSingleton<IEmailSender<PomodoroUser>, EmailSender>();
 
 var app = builder.Build();
 

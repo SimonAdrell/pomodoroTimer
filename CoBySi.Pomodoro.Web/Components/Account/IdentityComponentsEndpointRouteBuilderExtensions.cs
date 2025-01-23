@@ -40,15 +40,6 @@ namespace Microsoft.AspNetCore.Routing
                 return TypedResults.Challenge(properties, [provider]);
             });
 
-            // accountGroup.MapPost("/Logout", async (
-            //     ClaimsPrincipal user,
-            //     SignInManager<PomodoroUser> signInManager,
-            //     [FromForm] string returnUrl) =>
-            // {
-            //     await signInManager.SignOutAsync();
-            //     return TypedResults.LocalRedirect($"~/{returnUrl}");
-            // });
-
             var manageGroup = accountGroup.MapGroup("/Manage").RequireAuthorization();
 
             manageGroup.MapPost("/LinkExternalLogin", async (
