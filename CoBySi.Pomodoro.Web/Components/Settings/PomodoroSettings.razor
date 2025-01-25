@@ -1,0 +1,108 @@
+﻿@page "/Settings/PomodoroSettings"
+
+@using System.ComponentModel.DataAnnotations
+@using CoBySi.Pomodoro.Repository.Identity.Data
+@using CoBySi.Pomodoro.Web.Components.Account
+@using CoBySi.Pomodoro.Web.Components.Account.Shared
+@using CoBySi.Pomodoro.Web.Services
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<PomodoroUser> userManager;
+@inject IPomodoroSettingsService PomodoroSettingsService;
+<PageTitle>Manage pomodoro settings</PageTitle>
+
+<h3>PomodoroSettings</h3>
+<StatusMessage Message="@message" />
+<EditForm FormName="edit-pomodorosettings" EditContext="editContext" OnValidSubmit="OnValidSubmitAsync">
+    <DataAnnotationsValidator />
+    <ValidationSummary class="text-danger" role="alert" />
+    <div class="form-floating mb-3">
+        <InputNumber TValue="double" @bind-Value="Input.PomodoroDuration" class="form-control" aria-required="true"
+            placeholder="Duration of pomodoro." />
+        <label for="nPomodoroDuration" class="form-label">Duration of pomodoro</label>
+        <ValidationMessage For="() => Input.PomodoroDuration" class="text-danger" />
+    </div>
+    <div class="form-floating mb-3">
+        <InputNumber TValue="double" @bind-Value="Input.ShortBreakDuration" class="form-control" aria-required="true"
+            placeholder="Duration of short break." />
+        <label for="nPomodoroDuration" class="form-label">Duration of short break</label>
+        <ValidationMessage For="() => Input.ShortBreakDuration" class="text-danger" />
+    </div>
+    <div class="form-floating mb-3">
+        <InputNumber TValue="double" @bind-Value="Input.LongBreakDuration" class="form-control" aria-required="true"
+            placeholder="Duration of long break." />
+        <label for="nPomodoroDuration" class="form-label">Duration of long break</label>
+        <ValidationMessage For="() => Input.LongBreakDuration" class="text-danger" />
+    </div>
+    <div class="form-floating mb-3">
+        <InputNumber TValue="double" @bind-Value="Input.LongBreakInterval" class="form-control" aria-required="true"
+            placeholder="Number of pomodoros before long break." />
+        <label for="nPomodoroDuration" class="form-label">Number of pomodoros before long break</label>
+        <ValidationMessage For="() => Input.LongBreakInterval" class="text-danger" />
+    </div>
+
+    <button type="submit" class="w-100 btn btn-lg btn-primary">Update settings</button>
+</EditForm>
+@code {
+    private EditContext? editContext;
+    private string? message;
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Input ??= new();
+        editContext ??= new(Input);
+        if (HttpMethods.IsGet(HttpContext.Request.Method))
+        {
+
+            var user = await userManager.GetUserAsync(HttpContext.User);
+            var settings = await PomodoroSettingsService.GetUserPomodoroSettingsAsync(user.Id);
+
+            Input = new InputModel
+                {
+                    PomodoroDuration = settings.MinutesPerPomodoro,
+                    ShortBreakDuration = settings.MinutesPerShortBreak,
+                    LongBreakDuration = settings.MinutesPerLongBreak,
+                    LongBreakInterval = settings.PomodorosBeforeLongBreak
+                };
+
+            StateHasChanged();
+        }
+    }
+
+    private async Task OnValidSubmitAsync()
+    {
+        if (editContext is null)
+            return;
+
+        if (editContext.Model is InputModel im)
+        {
+            var user = await userManager.GetUserAsync(HttpContext.User);
+            await PomodoroSettingsService.SavePomodoroSettings(user.Id, new Pomodoro.PomodoroSettings()
+                {
+                    MinutesPerLongBreak = im.LongBreakDuration,
+                    MinutesPerPomodoro = im.PomodoroDuration,
+                    MinutesPerShortBreak = im.ShortBreakDuration,
+                    PomodorosBeforeLongBreak = im.LongBreakInterval
+                });
+            message = "Settings updated";
+        }
+    }
+
+    private sealed class InputModel
+    {
+        [Display(Name = "Duration of pomodoro")]
+        public double PomodoroDuration { get; set; }
+
+        [Display(Name = "Duration of short break")]
+        public double ShortBreakDuration { get; set; }
+
+        [Display(Name = "Duration of long break")]
+        public double LongBreakDuration { get; set; }
+
+        [Display(Name = "Number of pomodoros before long break")]
+        public double LongBreakInterval { get; set; }
+    }
+}

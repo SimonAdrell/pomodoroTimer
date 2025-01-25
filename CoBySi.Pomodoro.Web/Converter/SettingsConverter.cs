@@ -20,4 +20,16 @@ internal static class SettingsConverter
         };
     }
 
+    internal static UserPomodoroSettingsEntity ConvertToUserPomodoroSettingsEntity(this PomodoroSettings source, string userId)
+    {
+        return new UserPomodoroSettingsEntity()
+        {
+            UserID = userId,
+            MinutesPerLongBreak = source.MinutesPerLongBreak,
+            MinutesPerShortBreak = source.MinutesPerShortBreak,
+            MinutesPerPomodoro = source.MinutesPerPomodoro,
+            PomodorosBeforeLongBreak = source.PomodorosBeforeLongBreak
+        };
+    }
+
 }

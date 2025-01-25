@@ -1,5 +1,3 @@
-using System;
-
 namespace CoBySi.Pomodoro.Web.Settings;
 
 public class EmailSettings

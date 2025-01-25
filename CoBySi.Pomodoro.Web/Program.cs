@@ -1,7 +1,6 @@
 using CoBySi.Pomodoro;
 using CoBySi.Pomodoro.Repository;
 using CoBySi.Pomodoro.Web.Components;
-using CoBySi.Pomodoro.Web.PomodoroProperties;
 using Serilog;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +9,8 @@ using CoBySi.Pomodoro.Web.Components.Account;
 using Microsoft.AspNetCore.Components.Authorization;
 using CoBySi.Pomodoro.Web.EmailService;
 using CoBySi.Pomodoro.Web.Settings;
+using CoBySi.Pomodoro.Repository.settings;
+using CoBySi.Pomodoro.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,11 +33,12 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddSingleton<IPomodorHandler, PomodorHandler>();
 builder.Services.AddSingleton<IUserSettingsRepository, UserSettingsRepository>();
-builder.Services.AddSingleton<IPomdoroPropertiesHandler, PomdoroPropertiesHandler>();
+builder.Services.AddSingleton<IPomodoroSettingsService, PomodoroSettingsService>();
 
 builder.Services.Configure<PomodoroSettings>(builder.Configuration.GetSection("PomodoroSettings"));
 
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+builder.Services.Configure<MongoSettiings>(builder.Configuration.GetSection("mongodb"));
 
 builder.Services.AddSingleton(TimeProvider.System);
 
