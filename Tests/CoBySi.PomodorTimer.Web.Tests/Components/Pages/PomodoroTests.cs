@@ -1,7 +1,6 @@
 using CoBySi.Pomodoro;
 using CoBySi.Pomodoro.Timer;
 using CoBySi.Pomodoro.Web.Components;
-using Xunit;
 
 namespace CoBySi.PomodorTimer.Web.Tests.Components.Pages;
 

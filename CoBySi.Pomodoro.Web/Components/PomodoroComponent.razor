@@ -1,8 +1,11 @@
-﻿@using CoBySi.Pomodoro.Timer
-@using CoBySi.Pomodoro.Web.PomodoroProperties
+﻿@using CoBySi.Pomodoro.Repository.Identity.Data
+@using CoBySi.Pomodoro.Timer
+@using CoBySi.Pomodoro.Web.Services
+@using Microsoft.AspNetCore.Identity
 @using Serilog
 @rendermode InteractiveServer
 @inject IPomodorHandler _pomodoroHandler
+@inject UserManager<PomodoroUser> userManager;
 
 <div class="mb-3 d-flex mt-5 flex-column align-items-center align-self-center" data-bs-theme="dark">
     <div class="rounded-circle border border-success border-3 d-flex flex-column justify-content-center align-items-center"
@@ -10,7 +13,6 @@
         <h1 class="display-3">
             @currentMinutesSeconds
         </h1>
-        @* <h4>@_pomodoroState</h4> *@
         <div class=" flex-row d-flex mt-2">
             <div class=" p-2">
                 <button class="btn btn-link" @onclick="StartPomdoro">Start</button>
@@ -20,39 +22,63 @@
             </div>
         </div>
     </div>
-    @* <h4>@_breakCount pomodoros</h4> *@
-
 </div>
 @code {
     private string? currentMinutesSeconds;
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+    [CascadingParameter]
+    private Task<AuthenticationState> stateAuthenticate { get; set; }
+
     private PomodoroState _pomodoroState = PomodoroState.Pomodoro;
-    private readonly IPomdoroPropertiesHandler _pomdoroPropertiesHandler;
+    private readonly IPomodoroSettingsService _pomodoroSettingsService;
     private int _breakCount;
-    public PomodoroComponent(IPomdoroPropertiesHandler pomdoroPropertiesHandler)
+
+    public PomodoroComponent(IPomodoroSettingsService pomodoroSettingsService)
     {
-        _pomdoroPropertiesHandler = pomdoroPropertiesHandler;
+        _pomodoroSettingsService = pomodoroSettingsService;
     }
 
+    private async Task<PomodoroSettings> GetSettings()
+    {
+        string? userid = string.Empty;
+        var authstate = await stateAuthenticate;
+
+        if (authstate != null && authstate.User?.Identity != null && authstate.User.Identity.IsAuthenticated)
+        {
+            var user = await userManager.GetUserAsync(authstate.User);
+            if (user != null)
+                userid = user.Id;
+        }
+        return await _pomodoroSettingsService.GetUserPomodoroSettingsAsync(userid);
+    }
     protected override async Task OnInitializedAsync()
     {
-        if (_pomdoroPropertiesHandler == null)
-            throw new ArgumentNullException(nameof(_pomdoroPropertiesHandler));
 
-        var pomodoroSettings = await _pomdoroPropertiesHandler.GetPomodoroPropertiesAsync(Guid.Empty);
-        currentMinutesSeconds =
-        ConvertTimeSpanToMinutesSeconds(TimeSpan.FromMinutes(pomodoroSettings.MinutesPerPomodoro).TotalSeconds);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            if (_pomodoroSettingsService == null)
+                throw new ArgumentNullException(nameof(_pomodoroSettingsService));
+
+            var pomodoroSettings = await GetSettings();
+            ChangePomodoroState(PomodoroState.Pomodoro, pomodoroSettings);
+            StateHasChanged();
+        }
     }
     private async Task StartPomdoro()
     {
-        var pomodoroSettings = await _pomdoroPropertiesHandler.GetPomodoroPropertiesAsync(Guid.Empty);
+        var pomodoroSettings = await GetSettings();
         _pomodoroHandler?.Start(_pomodoroState, GetTotalNumberOfSeconds(_pomodoroState, pomodoroSettings));
         StartListeners();
     }
 
     private async Task StopPomodoro()
     {
-        var pomodoroSettings = await _pomdoroPropertiesHandler.GetPomodoroPropertiesAsync(Guid.Empty);
-
+        var pomodoroSettings = await GetSettings();
         _pomodoroHandler?.Stop(GetTotalNumberOfSeconds(_pomodoroState, pomodoroSettings));
         StopListeners();
     }
@@ -81,7 +107,7 @@
 
     private async Task PomodorHandler_TimerFinished(object? sender, TimerFinishedEventArgs e)
     {
-        var pomodoroSettings = await _pomdoroPropertiesHandler.GetPomodoroPropertiesAsync(Guid.Empty);
+        var pomodoroSettings = await GetSettings();
 
         StopListeners();
         switch (e.StateFinished)
@@ -102,7 +128,9 @@
 
     private async Task PomodoroFinished()
     {
-        var pomodoroSettings = await _pomdoroPropertiesHandler.GetPomodoroPropertiesAsync(Guid.Empty);
+
+        var user = await userManager.GetUserAsync(HttpContext.User);
+        var pomodoroSettings = await GetSettings();
         if (_breakCount >= pomodoroSettings?.PomodorosBeforeLongBreak)
         {
             ChangePomodoroState(PomodoroState.LongBreak, pomodoroSettings);
@@ -116,7 +144,7 @@
             return "00:00";
 
         var timeSpan = TimeSpan.FromSeconds(numberOfSeconds.Value);
-        return $"{timeSpan.Minutes:D2}:{timeSpan.Seconds:D2}";
+        return $"{timeSpan.TotalMinutes:00}:{timeSpan.Seconds:00}";
     }
 
     private void ChangePomodoroState(PomodoroState newState, PomodoroSettings? settings)

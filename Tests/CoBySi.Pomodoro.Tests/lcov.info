@@ -1,15 +1,15 @@
 SF:c:\Users\simon\Documents\projects\pomodoroTimer\CoBySi.Pomodoro\Models\PomodoroSettings.cs
-FN:4,System.Int32 CoBySi.Pomodoro.PomodoroSettings::get_MinutesPerPomodoro()
-FNDA:0,System.Int32 CoBySi.Pomodoro.PomodoroSettings::get_MinutesPerPomodoro()
+FN:4,System.Double CoBySi.Pomodoro.PomodoroSettings::get_MinutesPerPomodoro()
+FNDA:0,System.Double CoBySi.Pomodoro.PomodoroSettings::get_MinutesPerPomodoro()
 DA:5,0
-FN:5,System.Int32 CoBySi.Pomodoro.PomodoroSettings::get_MinutesPerShortBreak()
-FNDA:0,System.Int32 CoBySi.Pomodoro.PomodoroSettings::get_MinutesPerShortBreak()
+FN:5,System.Double CoBySi.Pomodoro.PomodoroSettings::get_MinutesPerShortBreak()
+FNDA:0,System.Double CoBySi.Pomodoro.PomodoroSettings::get_MinutesPerShortBreak()
 DA:6,0
-FN:6,System.Int32 CoBySi.Pomodoro.PomodoroSettings::get_MinutesPerLongBreak()
-FNDA:0,System.Int32 CoBySi.Pomodoro.PomodoroSettings::get_MinutesPerLongBreak()
+FN:6,System.Double CoBySi.Pomodoro.PomodoroSettings::get_MinutesPerLongBreak()
+FNDA:0,System.Double CoBySi.Pomodoro.PomodoroSettings::get_MinutesPerLongBreak()
 DA:7,0
-FN:7,System.Int32 CoBySi.Pomodoro.PomodoroSettings::get_PomodorosBeforeLongBreak()
-FNDA:0,System.Int32 CoBySi.Pomodoro.PomodoroSettings::get_PomodorosBeforeLongBreak()
+FN:7,System.Double CoBySi.Pomodoro.PomodoroSettings::get_PomodorosBeforeLongBreak()
+FNDA:0,System.Double CoBySi.Pomodoro.PomodoroSettings::get_PomodorosBeforeLongBreak()
 DA:8,0
 LF:4
 LH:0

@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using System.Text.Json;
 using CoBySi.Pomodoro.Web.Components.Account.Pages;
 using CoBySi.Pomodoro.Web.Components.Account.Pages.Manage;

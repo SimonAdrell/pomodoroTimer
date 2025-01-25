@@ -1,4 +1,3 @@
-using System;
 using CoBySi.Pomodoro.Repository.Identity.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
