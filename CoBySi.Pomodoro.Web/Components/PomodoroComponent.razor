@@ -26,8 +26,6 @@
 @code {
     private string? currentMinutesSeconds;
     [CascadingParameter]
-    private HttpContext HttpContext { get; set; } = default!;
-    [CascadingParameter]
     private Task<AuthenticationState> stateAuthenticate { get; set; }
 
     private PomodoroState _pomodoroState = PomodoroState.Pomodoro;

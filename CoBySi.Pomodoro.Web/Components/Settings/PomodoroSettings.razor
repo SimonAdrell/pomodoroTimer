@@ -47,6 +47,10 @@
     private string? message;
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
+
+    [CascadingParameter]
+    private Task<AuthenticationState> stateAuthenticate { get; set; }
+
     [SupplyParameterFromForm]
     private InputModel Input { get; set; } = new();
 
@@ -57,16 +61,6 @@
         if (HttpMethods.IsGet(HttpContext.Request.Method))
         {
 
-            var user = await userManager.GetUserAsync(HttpContext.User);
-            var settings = await PomodoroSettingsService.GetUserPomodoroSettingsAsync(user.Id);
-
-            Input = new InputModel
-                {
-                    PomodoroDuration = settings.MinutesPerPomodoro,
-                    ShortBreakDuration = settings.MinutesPerShortBreak,
-                    LongBreakDuration = settings.MinutesPerLongBreak,
-                    LongBreakInterval = settings.PomodorosBeforeLongBreak
-                };
 
             StateHasChanged();
         }
@@ -89,6 +83,26 @@
                 });
             message = "Settings updated";
         }
+    }
+
+    private async Task<InputModel> GetInputModel()
+    {
+        string userId = string.Empty;
+        var authstate = await stateAuthenticate;
+        if (authstate != null && authstate.User?.Identity != null && authstate.User.Identity.IsAuthenticated)
+        {
+            var user = await userManager.GetUserAsync(HttpContext.User);
+            userId = user.Id;
+        }
+
+        var settings = await PomodoroSettingsService.GetUserPomodoroSettingsAsync(userId);
+        return new InputModel
+            {
+                PomodoroDuration = settings.MinutesPerPomodoro,
+                ShortBreakDuration = settings.MinutesPerShortBreak,
+                LongBreakDuration = settings.MinutesPerLongBreak,
+                LongBreakInterval = settings.PomodorosBeforeLongBreak
+            };
     }
 
     private sealed class InputModel
