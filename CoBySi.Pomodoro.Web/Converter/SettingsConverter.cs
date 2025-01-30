@@ -9,8 +9,11 @@ internal static class SettingsConverter
     /// </summary>
     /// <param name="source">The <see cref="UserPomodoroSettingsEntity"/> to convert.</param>
     /// <returns>A <see cref="PomodoroSettings"/> object with the converted settings.</returns>
-    internal static PomodoroSettings ConvertToPomodoroSettings(this UserPomodoroSettingsEntity source)
+    internal static PomodoroSettings? ConvertToPomodoroSettings(this UserPomodoroSettingsEntity? source)
     {
+        if (source == null)
+            return null;
+
         return new PomodoroSettings()
         {
             MinutesPerLongBreak = source.MinutesPerLongBreak,

@@ -402,5 +402,7 @@ FodyWeavers.xsd
 # Db data
 mongo-data/
 postgres-data/
+redis-data/
 
-Icov.info
+*/Icov.info
+Tests/CoBySi.PomodorTimer.Web.Tests/lcov.info

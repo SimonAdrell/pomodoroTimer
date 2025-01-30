@@ -11,6 +11,7 @@ using CoBySi.Pomodoro.Web.EmailService;
 using CoBySi.Pomodoro.Web.Settings;
 using CoBySi.Pomodoro.Repository.settings;
 using CoBySi.Pomodoro.Web.Services;
+using CoBySi.Pomodoro.Web.Cache;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,6 +40,9 @@ builder.Services.Configure<PomodoroSettings>(builder.Configuration.GetSection("P
 
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.Configure<MongoSettiings>(builder.Configuration.GetSection("mongodb"));
+builder.Services.Configure<RedisSettings>(builder.Configuration.GetSection("redis"));
+
+builder.Services.AddSingleton<ISettingsCache, SettingsCache>();
 
 builder.Services.AddSingleton(TimeProvider.System);
 
@@ -49,6 +53,15 @@ builder.Services.AddScoped<IdentityUserAccessor>();
 builder.Services.AddScoped<IdentityRedirectManager>();
 
 builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
+
+builder.Services.AddStackExchangeRedisCache(options =>
+ {
+     var redisSettings = new RedisSettings();
+     builder.Configuration.GetSection("redis").Bind(redisSettings);
+
+     options.Configuration = redisSettings?.ConnectionString;
+     options.InstanceName = redisSettings?.InstanceName;
+ });
 
 builder.Services.AddAuthentication(options =>
     {

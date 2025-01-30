@@ -44,10 +44,12 @@
             HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
             statusMessage = "Error finding user for unspecified email";
         }
-        // Once you add a real email sender, you should remove this code that lets you confirm the account
-        var userId = await UserManager.GetUserIdAsync(user);
-        var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
-        code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-        await EmailSender.SendConfirmationLinkAsync(user, Email, code);
+        else
+        {
+            var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
+            code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+            await EmailSender.SendConfirmationLinkAsync(user, Email, code);
+
+        }
     }
 }
