@@ -2,6 +2,6 @@ namespace CoBySi.Pomodoro.Web.Cache;
 
 public interface ICacheBase
 {
-    public T? Get<T>(string key);
-    public void Set<T>(string key, T value);
+    public Task<T?> GetAsync<T>(string key, CancellationToken cancellationToken);
+    public Task SetAsync<T>(string key, T value, CancellationToken cancellationToken);
 }

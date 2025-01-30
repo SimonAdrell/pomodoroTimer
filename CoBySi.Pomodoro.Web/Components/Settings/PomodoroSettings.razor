@@ -5,12 +5,15 @@
 @using CoBySi.Pomodoro.Web.Components.Account
 @using CoBySi.Pomodoro.Web.Components.Account.Shared
 @using CoBySi.Pomodoro.Web.Services
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
 @using Microsoft.AspNetCore.Identity
 @inject UserManager<PomodoroUser> userManager;
 @inject IPomodoroSettingsService PomodoroSettingsService;
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+
 <PageTitle>Manage pomodoro settings</PageTitle>
 
-<h3>PomodoroSettings</h3>
+<h3>Settings</h3>
 <StatusMessage Message="@message" />
 <EditForm FormName="edit-pomodorosettings" EditContext="editContext" OnValidSubmit="OnValidSubmitAsync">
     <DataAnnotationsValidator />
@@ -43,6 +46,8 @@
     <button type="submit" class="w-100 btn btn-lg btn-primary">Update settings</button>
 </EditForm>
 @code {
+    private const string SessionCookieName = "PomodoroSessionId";
+    private string? sessionId;
     private EditContext? editContext;
     private string? message;
     [CascadingParameter]
@@ -53,19 +58,43 @@
 
     [SupplyParameterFromForm]
     private InputModel Input { get; set; } = new();
+    private CancellationTokenSource _cts = new();
 
     protected override async Task OnInitializedAsync()
     {
+        sessionId = GetOrCreateSessionId();
         Input ??= new();
         editContext ??= new(Input);
         if (HttpMethods.IsGet(HttpContext.Request.Method))
         {
-
-
+            Input = await GetInputModel();
             StateHasChanged();
         }
     }
 
+    private string GetOrCreateSessionId()
+    {
+        var context = HttpContextAccessor.HttpContext;
+        if (context == null)
+        {
+            throw new InvalidOperationException("HttpContext is not available.");
+        }
+
+        if (context.Request.Cookies.TryGetValue(SessionCookieName, out var existingSessionId))
+        {
+            return existingSessionId;
+        }
+
+        var newSessionId = Guid.NewGuid().ToString();
+        context.Response.Cookies.Append(SessionCookieName, newSessionId, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = context.Request.IsHttps,
+                Expires = DateTimeOffset.UtcNow.AddMonths(1)
+            });
+
+        return newSessionId;
+    }
     private async Task OnValidSubmitAsync()
     {
         if (editContext is null)
@@ -74,13 +103,16 @@
         if (editContext.Model is InputModel im)
         {
             var user = await userManager.GetUserAsync(HttpContext.User);
-            await PomodoroSettingsService.SavePomodoroSettings(user.Id, new Pomodoro.PomodoroSettings()
+            var userid = string.Empty;
+            if (user != null)
+                userid = user.Id;
+            await PomodoroSettingsService.SavePomodoroSettingsAsync(userid, GetOrCreateSessionId(), new Pomodoro.PomodoroSettings()
                 {
                     MinutesPerLongBreak = im.LongBreakDuration,
                     MinutesPerPomodoro = im.PomodoroDuration,
                     MinutesPerShortBreak = im.ShortBreakDuration,
                     PomodorosBeforeLongBreak = im.LongBreakInterval
-                });
+                }, _cts.Token);
             message = "Settings updated";
         }
     }
@@ -92,10 +124,11 @@
         if (authstate != null && authstate.User?.Identity != null && authstate.User.Identity.IsAuthenticated)
         {
             var user = await userManager.GetUserAsync(HttpContext.User);
-            userId = user.Id;
+            if (user != null)
+                userId = user.Id;
         }
 
-        var settings = await PomodoroSettingsService.GetUserPomodoroSettingsAsync(userId);
+        var settings = await PomodoroSettingsService.GetUserPomodoroSettingsAsync(userId, sessionId, _cts.Token);
         return new InputModel
             {
                 PomodoroDuration = settings.MinutesPerPomodoro,
