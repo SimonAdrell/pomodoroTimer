@@ -18,6 +18,11 @@ public class PomodorHandler : IPomodorHandler
         _timeProvider = timeProvider;
     }
 
+    public bool IsRunning()
+    {
+        return _pomodoroTimer != null;
+    }
+
     public void Start(PomodoroState pomodoroState, double? totalNumberOfSeconds)
     {
         _currentState = pomodoroState;

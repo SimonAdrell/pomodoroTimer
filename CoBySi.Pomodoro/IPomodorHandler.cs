@@ -8,4 +8,5 @@ public interface IPomodorHandler
     event EventHandler<TimerFinishedEventArgs>? TimerFinished;
     void Start(PomodoroState pomodoroState, double? totalNumberOfSeconds);
     void Stop(double? totalNumberOfSeconds);
+    bool IsRunning();
 }
