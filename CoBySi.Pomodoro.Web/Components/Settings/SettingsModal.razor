@@ -1,0 +1,29 @@
+﻿@using Serilog
+<Modal @ref="modal" title="Settings" IsVerticallyCentered="true">
+    <BodyTemplate>
+        <PomodoroSettings></PomodoroSettings>
+    </BodyTemplate>
+    <FooterTemplate>
+        <Button Color="ButtonColor.Secondary" @onclick="OnHideModalClick">Close</Button>
+        <Button Color="ButtonColor.Primary">Save changes</Button>
+    </FooterTemplate>
+</Modal>
+<Button @onclick="OnShowModalClick">
+    <Icon Name="IconName.Gear" Size="IconSize.x5" />
+</Button>
+
+@code {
+    private Modal modal = default!;
+
+    private async Task OnShowModalClick()
+    {
+        Log.Information("Show modal {@modal}", modal);
+        await modal.ShowAsync();
+    }
+
+    private async Task OnHideModalClick()
+    {
+        await modal.HideAsync();
+    }
+
+}
