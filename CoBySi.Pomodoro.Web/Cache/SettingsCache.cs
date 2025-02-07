@@ -6,7 +6,7 @@ namespace CoBySi.Pomodoro.Web.Cache;
 
 public class SettingsCache : CacheBase, ISettingsCache
 {
-    public SettingsCache(IDistributedCache distributedCache, IOptions<RedisSettings> cacheSetting) : base(distributedCache, cacheSetting?.Value.PomodoroCache)
+    public SettingsCache(IDistributedCache distributedCache, IOptions<RedisSettings> cacheSetting) : base(distributedCache, cacheSetting?.Value.SettingsCache)
     {
     }
 }

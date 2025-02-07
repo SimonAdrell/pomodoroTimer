@@ -1,6 +1,6 @@
 namespace CoBySi.Pomodoro.Timer;
 
-public enum PomodoroState
+public enum PomodoroStatus
 {
     Pomodoro,
     ShortBreak,
