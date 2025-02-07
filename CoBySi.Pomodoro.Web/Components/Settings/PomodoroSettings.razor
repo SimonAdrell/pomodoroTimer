@@ -2,12 +2,12 @@
 @using CoBySi.Pomodoro.Repository.Identity.Data
 @using CoBySi.Pomodoro.Web.Components.Account
 @using CoBySi.Pomodoro.Web.Components.Account.Shared
+@using CoBySi.Pomodoro.Web.Handler
 @using CoBySi.Pomodoro.Web.Services
 @using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
 @using Microsoft.AspNetCore.Identity
 @inject UserManager<PomodoroUser> userManager;
 @inject IPomodoroSettingsService PomodoroSettingsService;
-@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
 @inject ProtectedLocalStorage ProtectedLocalStorage;
 <PageTitle>Manage pomodoro settings</PageTitle>
 
@@ -59,34 +59,20 @@
 
     protected override async Task OnInitializedAsync()
     {
-        @* sessionId = await GetOrCreateSessionId(); *@
         Input ??= new();
         editContext ??= new(Input);
-        StateHasChanged();
+        await this.InvokeAsync(() => StateHasChanged());
     }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
-        {
-            sessionId = await GetOrCreateSessionId();
-            @* 
-            Input ??= new();
-            editContext ??= new(Input); *@
-            Input = await GetInputModel();
-            StateHasChanged();
-        }
+        if (!firstRender)
+            return;
+
+        sessionId = await ProtectedLocalStorage.GetOrCreateSessionIdAsync();
+        Input = await GetInputModel();
+        StateHasChanged();
     }
 
-    private async Task<string> GetOrCreateSessionId()
-    {
-        var session = await ProtectedLocalStorage.GetAsync<Guid>(SessionCookieName);
-        if (session.Success && session.Value != Guid.Empty)
-            return session.Value.ToString();
-
-        var newSessionId = Guid.NewGuid().ToString();
-        await ProtectedLocalStorage.SetAsync(SessionCookieName, newSessionId);
-        return newSessionId;
-    }
     private async Task OnValidSubmitAsync()
     {
         if (editContext is null)
@@ -103,7 +89,7 @@
                     userId = user.Id;
             }
 
-            await PomodoroSettingsService.SavePomodoroSettingsAsync(userId, await GetOrCreateSessionId(), new
+            await PomodoroSettingsService.SavePomodoroSettingsAsync(userId, sessionId, new
             Pomodoro.PomodoroSettings()
             {
                 MinutesPerLongBreak = Input.LongBreakDuration,
