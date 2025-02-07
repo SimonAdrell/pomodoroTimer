@@ -1,12 +1,12 @@
+using CoBySi.Pomodoro.Models;
 using CoBySi.Pomodoro.Timer;
 
 namespace CoBySi.Pomodoro;
 
 public interface IPomodorHandler
 {
-    event EventHandler<TimeChangedEventArgs>? ElapsedTimeChanged;
-    event EventHandler<TimerFinishedEventArgs>? TimerFinished;
-    void Start(PomodoroState pomodoroState, double? totalNumberOfSeconds);
-    void Stop(double? totalNumberOfSeconds);
+    event EventHandler<TimerChangedEventArgs>? TimerChanged;
+    void StartNext(PomodoroSettings? pomodoroSettings);
+    void Stop();
     bool IsRunning();
 }

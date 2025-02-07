@@ -1,25 +1,33 @@
 ﻿@using CoBySi.Pomodoro
+@using CoBySi.Pomodoro.Models
 @using CoBySi.Pomodoro.Repository.Identity.Data
 @using CoBySi.Pomodoro.Timer
 @using CoBySi.Pomodoro.Web.Converter
+@using CoBySi.Pomodoro.Web.Handler
 @using CoBySi.Pomodoro.Web.Services
 @using Microsoft.AspNetCore.Identity
 @using Serilog
+
 @rendermode InteractiveServer
+
 @inject IPomodorHandler _pomodoroHandler
 @inject UserManager<PomodoroUser> userManager;
 @inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
 @inject IJSRuntime JS
+
 <audio id="timerSound" src="sounds/alert.mp3"></audio>
 <div class="mb-3 d-flex mt-5 flex-column align-items-center align-self-center" data-bs-theme="dark">
     <div class="rounded-circle border border-success border-3 d-flex flex-column justify-content-center align-items-center"
         style="width: 300px; height: 300px;">
+        <h3>
+            @pomodoroState
+        </h3>
         <h1 class="display-3">
             @currentMinutesSeconds
         </h1>
         <div class=" flex-row d-flex mt-2">
             <div class=" p-2">
-                <button class="btn btn-link" @onclick="StartPomdoro">Start</button>
+                <button class="btn btn-link" @onclick="StartNext">Start</button>
             </div>
             <div class="p-2 border-start border-success-emphasis border-3">
                 <button class="btn btn-link" @onclick="StopPomodoro">Stop</button>
@@ -29,11 +37,10 @@
 </div>
 @code {
     private string? currentMinutesSeconds;
-    private const string SessionCookieName = "PomodoroSessionId";
+    private string? pomodoroState;
 
     [CascadingParameter]
     private Task<AuthenticationState> stateAuthenticate { get; set; }
-    private PomodoroState _pomodoroState = PomodoroState.Pomodoro;
     private readonly IPomodoroSettingsService _pomodoroSettingsService;
     private int _breakCount;
     private CancellationTokenSource _cts = new();
@@ -41,19 +48,6 @@
     public PomodoroComponent(IPomodoroSettingsService pomodoroSettingsService)
     {
         _pomodoroSettingsService = pomodoroSettingsService;
-    }
-
-    async Task NotifyTimerCompletion()
-    {
-        await JS.InvokeVoidAsync(
-        "showNotification",
-        "Pomodoro Complete!",
-        new { body = "Time to take a break.", icon = "/images/break-time.png" }
-        );
-    }
-    async Task PlayCompletionSound()
-    {
-        await JS.InvokeVoidAsync("playSound", "timerSound");
     }
 
     private async Task<PomodoroSettings> GetSettings()
@@ -67,7 +61,9 @@
             if (user != null)
                 userid = user.Id;
         }
-        return await _pomodoroSettingsService.GetUserPomodoroSettingsAsync(userid, GetOrCreateSessionId(), _cts.Token);
+        return await _pomodoroSettingsService.GetUserPomodoroSettingsAsync(userid,
+        SessionHandler.GetOrCreateSessionId(HttpContextAccessor.HttpContext),
+        _cts.Token);
     }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -79,22 +75,26 @@
                 throw new ArgumentNullException(nameof(_pomodoroSettingsService));
 
             var pomodoroSettings = await GetSettings();
-            ChangePomodoroState(PomodoroState.Pomodoro, pomodoroSettings);
+            currentMinutesSeconds =
+            ConvertTimeSpanToMinutesSeconds(TimeSpan.FromMinutes(pomodoroSettings.MinutesPerPomodoro).TotalSeconds);
+
+            SetPomodoroState(PomodoroStatus.Pomodoro);
             StateHasChanged();
         }
-    }
-    private async Task StartPomdoro()
-    {
-        var pomodoroSettings = await GetSettings();
-        _pomodoroHandler?.Start(_pomodoroState, GetTotalNumberOfSeconds(_pomodoroState, pomodoroSettings));
-        StartListeners();
     }
 
     private async Task StopPomodoro()
     {
         var pomodoroSettings = await GetSettings();
-        _pomodoroHandler?.Stop(GetTotalNumberOfSeconds(_pomodoroState, pomodoroSettings));
+        _pomodoroHandler?.Stop();
         StopListeners();
+    }
+
+    private async Task StartNext()
+    {
+        var pomodoroSettings = await GetSettings();
+        _pomodoroHandler.StartNext(pomodoroSettings);
+        StartListeners();
     }
 
     private void StartListeners()
@@ -102,103 +102,67 @@
         if (_pomodoroHandler == null)
             throw new ArgumentNullException(nameof(_pomodoroHandler));
 
-        _pomodoroHandler.ElapsedTimeChanged += PomodorHandler_ElapsedTimeChanged;
-        _pomodoroHandler.TimerFinished += async (s, e) => await PomodorHandler_TimerFinished(s, e);
+        _pomodoroHandler.TimerChanged += async (s, e) => await PomodorHandler_TimerChanged(s, e);
     }
     private void StopListeners()
     {
         if (_pomodoroHandler == null)
             throw new ArgumentNullException(nameof(_pomodoroHandler));
 
-        _pomodoroHandler.ElapsedTimeChanged -= PomodorHandler_ElapsedTimeChanged;
-        _pomodoroHandler.TimerFinished -= async (s, e) => await PomodorHandler_TimerFinished(s, e);
-    }
-    private void PomodorHandler_ElapsedTimeChanged(object? sender, TimeChangedEventArgs e)
-    {
-        currentMinutesSeconds = ConvertTimeSpanToMinutesSeconds(e.NumberOfSecondsLeft);
-        this.InvokeAsync(() => StateHasChanged());
+        _pomodoroHandler.TimerChanged -= async (s, e) => await PomodorHandler_TimerChanged(s, e);
     }
 
-    private async Task PomodorHandler_TimerFinished(object? sender, TimerFinishedEventArgs e)
+
+    private async Task PomodorHandler_TimerChanged(object? sender, TimerChangedEventArgs e)
     {
-        var pomodoroSettings = await GetSettings();
-        StopListeners();
-        await PlayCompletionSound();
-        await NotifyTimerCompletion();
-        switch (e.StateFinished)
-        {
-            case PomodoroState.Pomodoro:
-                await PomodoroFinished();
-                break;
-            case PomodoroState.ShortBreak:
-                _breakCount++;
-                ChangePomodoroState(PomodoroState.Pomodoro, pomodoroSettings);
-                break;
-            case PomodoroState.LongBreak:
-                ChangePomodoroState(PomodoroState.Pomodoro, pomodoroSettings);
-                break;
-        }
+        Log.Information("TimerChangedEventArgs {@pomocdoroItem}", e);
+        if (e.Item is null)
+            return;
+
+        if (e.EventType.HasFlag(TimerEventType.Finished))
+            await TimerFinished(e.Item);
+
+        currentMinutesSeconds = ConvertTimeSpanToMinutesSeconds(e.NumberOfSecondsLeft);
+        SetPomodoroState(e.Item.Status);
         await this.InvokeAsync(() => StateHasChanged());
     }
 
-    private async Task PomodoroFinished()
+    private async Task TimerFinished(PomodoroItem pomodoroItem)
     {
-        var pomodoroSettings = await GetSettings();
-        if (_breakCount >= pomodoroSettings?.PomodorosBeforeLongBreak)
-        {
-            ChangePomodoroState(PomodoroState.LongBreak, pomodoroSettings);
-            _breakCount = 0;
-        }
-        ChangePomodoroState(PomodoroState.ShortBreak, pomodoroSettings);
+        StopListeners();
+        await PlayCompletionSound();
+        await NotifyTimerCompletion(pomodoroItem);
+        Log.Information("PomodoroItem {@pomocdoroItem}", pomodoroItem);
     }
+
+    private async Task NotifyTimerCompletion(PomodoroItem pomodoroItem)
+    {
+        var title = pomodoroItem.Status.HasFlag(PomodoroStatus.Pomodoro) ? "Pomodoro Complete!" : "Break Complete!";
+        var body = pomodoroItem.Status.HasFlag(PomodoroStatus.Pomodoro) ? "Time to take a break!" : "Time to work!";
+        Log.Information("Notification {title}", title);
+
+        await JS.InvokeVoidAsync(
+        "showNotification",
+        title,
+        new { body = body, icon = "/images/myface_132.png" }
+        );
+    }
+
+    private async Task PlayCompletionSound() => await JS.InvokeVoidAsync("playSound", "timerSound");
+
     private static string ConvertTimeSpanToMinutesSeconds(double? numberOfSeconds)
     {
         if (numberOfSeconds == null)
             return "00:00";
-        return TimeSpan.FromSeconds(numberOfSeconds.Value)
-        .ConvertTimeSpanToMinutesSecondsString();
+        return TimeSpan.FromSeconds(numberOfSeconds.Value).ConvertTimeSpanToMinutesSecondsString();
     }
-
-    private void ChangePomodoroState(PomodoroState newState, PomodoroSettings? settings)
+    private void SetPomodoroState(PomodoroStatus status)
     {
-        if (settings == null)
-            throw new ArgumentNullException(nameof(settings));
-
-        _pomodoroState = newState;
-        currentMinutesSeconds = ConvertTimeSpanToMinutesSeconds(GetTotalNumberOfSeconds(newState, settings)) ?? "00:00";
-    }
-
-    public static double? GetTotalNumberOfSeconds(PomodoroState pomodoroState, PomodoroSettings pomodoroSettings)
-    {
-        return pomodoroState switch
+        pomodoroState = status switch
         {
-            PomodoroState.ShortBreak => TimeSpan.FromMinutes(pomodoroSettings.MinutesPerShortBreak).TotalSeconds,
-            PomodoroState.LongBreak => TimeSpan.FromMinutes(pomodoroSettings.MinutesPerLongBreak).TotalSeconds,
-            _ => (double?)TimeSpan.FromMinutes(pomodoroSettings.MinutesPerPomodoro).TotalSeconds,
+            PomodoroStatus.ShortBreak => "Short Break",
+            PomodoroStatus.LongBreak => "Long Break",
+            _ => "Pomodoro",
         };
-    }
-
-    private string GetOrCreateSessionId()
-    {
-        var context = HttpContextAccessor.HttpContext;
-        if (context == null)
-        {
-            throw new InvalidOperationException("HttpContext is not available.");
-        }
-
-        if (context.Request.Cookies.TryGetValue(SessionCookieName, out var existingSessionId))
-        {
-            return existingSessionId;
-        }
-
-        var newSessionId = Guid.NewGuid().ToString();
-        context.Response.Cookies.Append(SessionCookieName, newSessionId, new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = context.Request.IsHttps,
-                Expires = DateTimeOffset.UtcNow.AddMonths(1)
-            });
-
-        return newSessionId;
     }
 }

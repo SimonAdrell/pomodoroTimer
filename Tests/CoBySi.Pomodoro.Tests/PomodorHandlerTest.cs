@@ -1,5 +1,6 @@
 using CoBySi.Pomodoro.Timer;
 using Microsoft.Extensions.Time.Testing;
+using NSubstitute;
 
 namespace CoBySi.Pomodoro.Tests;
 
@@ -15,11 +16,11 @@ public class PomodorHandlerTest
             MinutesPerPomodoro = 1
         };
         var pomodoroHandler = new PomodorHandler(timeProvider);
-        var pomodoroState = PomodoroState.Pomodoro;
+        var pomodoroState = PomodoroStatus.Pomodoro;
         var raised = false;
 
         double? totalNumberOfSecondsLeft = 0;
-        pomodoroHandler.ElapsedTimeChanged += (sender, args) =>
+        pomodoroHandler.TimerChanged += (sender, args) =>
         {
             raised = true;
             totalNumberOfSecondsLeft = args.NumberOfSecondsLeft;
@@ -108,7 +109,29 @@ public class PomodorHandlerTest
         Assert.InRange(ticks, 0, TimeSpan.FromMinutes(pomodoroSettings.MinutesPerPomodoro).TotalSeconds - 10);
     }
 
+    [Fact]
+    public void Start_WhenCalledSecondTime_ShouldNotStartSecondCountDown()
+    {
+        // Arrange
+        var timeProvider = new FakeTimeProvider();
+        var pomodoroSettings = new PomodoroSettings
+        {
+            MinutesPerPomodoro = 25
+        };
+        var sut = new PomodorHandler(timeProvider);
+        var pomodoroState = PomodoroState.Pomodoro;
 
+        //Act
+        sut.Start(pomodoroState, TimeSpan.FromMinutes(pomodoroSettings.MinutesPerPomodoro).TotalSeconds);
 
+        timeProvider.Advance(TimeSpan.FromMinutes(3));
+
+        sut.Start(pomodoroState, TimeSpan.FromMinutes(pomodoroSettings.MinutesPerPomodoro).TotalSeconds);
+
+        //Assert
+
+        timeProvider.Received(1).CreateTimer(Arg.Any<TimerCallback>(), Arg.Any<object>(), Arg.Any<TimeSpan>(), Arg.Any<TimeSpan>());
+
+    }
 }
 

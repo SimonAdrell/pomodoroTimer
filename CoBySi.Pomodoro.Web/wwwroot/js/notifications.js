@@ -4,7 +4,13 @@ window.requestNotificationPermission = () => {
 
 window.showNotification = (title, options) => {
     if (Notification.permission === 'granted') {
-        new Notification(title, options);
+        const n = new Notification(title, options);
+        document.addEventListener("visibilitychange", () => {
+            if (document.visibilityState === "visible") {
+                // The tab has become visible so clear the now-stale Notification.
+                n.close();
+            }
+        });
     }
 }
 
