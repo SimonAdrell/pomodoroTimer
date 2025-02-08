@@ -1,4 +1,5 @@
-﻿@using Serilog
+﻿@using CoBySi.Pomodoro.Repository
+@using Serilog
 @inject IJSRuntime JS
 
 <h3 class="mt-3 mb-3">Notification settings</h3>
@@ -21,6 +22,13 @@
 @code {
     private EditContext? editContext;
     private InputModel Input { get; set; } = new();
+    private readonly IUserSettingsRepository _userSettingsRepository;
+
+    public NotificationSettings(IUserSettingsRepository userSettingsRepository)
+    {
+        _userSettingsRepository = userSettingsRepository;
+    }
+
     protected override async Task OnInitializedAsync()
     {
         Input ??= new();

@@ -36,4 +36,33 @@ public class UserSettingsRepository : IUserSettingsRepository
             .Set(x => x.PomodorosBeforeLongBreak, entity.PomodorosBeforeLongBreak),
             new UpdateOptions { IsUpsert = true }, cancellationToken);
     }
+
+    public async Task<NotificationEntity?> SaveNotificationItemAsync(NotificationEntity notificationItem, CancellationToken cancellationToken)
+    {
+        var client = new MongoClient(_mongoSettiings.ConnectionString);
+        var collection = client.GetDatabase(_mongoSettiings.Database)
+            .GetCollection<NotificationEntity>(_mongoSettiings.Collections?.NotificationSettingsCollection);
+        var filter = Builders<NotificationEntity>.Filter.Eq(x => x.Id, notificationItem.Id);
+
+        var result = await collection.UpdateOneAsync(filter, new UpdateDefinitionBuilder<NotificationEntity>()
+            .Set(x => x.LastChanged, notificationItem.LastChanged)
+            .Set(x => x.UserId, notificationItem.UserId)
+            .Set(x => x.Notify, notificationItem.Notify)
+            .Set(x => x.SoundID, notificationItem.SoundID)
+            .Set(x => x.PlaySound, notificationItem.PlaySound),
+            new UpdateOptions { IsUpsert = true }, cancellationToken);
+
+        if (result.IsAcknowledged)
+            notificationItem.Id = result.UpsertedId.AsString;
+        return result.IsAcknowledged ? notificationItem : null;
+    }
+
+    public async Task<NotificationEntity?> GetUserNotificationSettingsAsync(string userId, CancellationToken cancellationToken)
+    {
+        var client = new MongoClient(_mongoSettiings.ConnectionString);
+        var collection = client.GetDatabase(_mongoSettiings.Database)
+            .GetCollection<NotificationEntity>(_mongoSettiings.Collections?.NotificationSettingsCollection);
+        var filter = Builders<NotificationEntity>.Filter.Eq(x => x.UserId, userId);
+        return await collection.Find(filter).FirstOrDefaultAsync(cancellationToken);
+    }
 }
