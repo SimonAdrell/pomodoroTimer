@@ -1,6 +1,9 @@
 ﻿@using CoBySi.Pomodoro.Repository
+@using CoBySi.Pomodoro.Repository.Identity.Data
+@using Microsoft.AspNetCore.Identity
 @using Serilog
 @inject IJSRuntime JS
+@inject UserManager<PomodoroUser> userManager;
 
 <h3 class="mt-3 mb-3">Notification settings</h3>
 <EditForm FormName="edit-pomodorosettings" EditContext="editContext" OnValidSubmit="OnValidSubmitAsync">
@@ -8,6 +11,10 @@
     <ValidationSummary class="text-danger" role="alert" />
     <div class="mb-3">
         <Switch @bind-Value="Input.NotificaionsEnabled" aria-required="true" Label="Notify when timer is completed" />
+        <ValidationMessage For="() => Input.NotificaionsEnabled" class="text-danger" />
+    </div>
+    <div class="mb-3">
+        <Switch @bind-Value="Input.PlaySound" aria-required="true" Label="Play sound when timer is complete" />
         <ValidationMessage For="() => Input.NotificaionsEnabled" class="text-danger" />
     </div>
     <div class="mb-3">
@@ -21,8 +28,12 @@
 
 @code {
     private EditContext? editContext;
+    [SupplyParameterFromForm]
     private InputModel Input { get; set; } = new();
     private readonly IUserSettingsRepository _userSettingsRepository;
+    private CancellationTokenSource _cts = new();
+    [CascadingParameter]
+    private Task<AuthenticationState> stateAuthenticate { get; set; }
 
     public NotificationSettings(IUserSettingsRepository userSettingsRepository)
     {
@@ -59,11 +70,29 @@
 
         if (editContext.Model is InputModel im)
         {
+            string userId = string.Empty;
+            var authstate = await stateAuthenticate;
+            if (authstate != null && authstate.User?.Identity != null && authstate.User.Identity.IsAuthenticated)
+            {
+                var user = await userManager.GetUserAsync(authstate.User);
+                if (user != null)
+                    userId = user.Id;
+            }
             Log.Information("Input model: {@im}", im);
+            await _userSettingsRepository.SaveNotificationItemAsync(new Repository.Models.NotificationEntity()
+            {
+                UserId = userId,
+                NotificationEnabled = im.NotificaionsEnabled,
+                NotificationSoundEnabled = im.PlaySound,
+                SoundID = im.SoundID
+            }, _cts.Token);
         }
     }
     private sealed class InputModel
     {
         public bool NotificaionsEnabled { get; set; } = true;
+        public bool PlaySound { get; set; } = true;
+        public int SoundID { get; set; }
+
     }
 }

@@ -47,9 +47,9 @@ public class UserSettingsRepository : IUserSettingsRepository
         var result = await collection.UpdateOneAsync(filter, new UpdateDefinitionBuilder<NotificationEntity>()
             .Set(x => x.LastChanged, notificationItem.LastChanged)
             .Set(x => x.UserId, notificationItem.UserId)
-            .Set(x => x.Notify, notificationItem.Notify)
-            .Set(x => x.SoundID, notificationItem.SoundID)
-            .Set(x => x.PlaySound, notificationItem.PlaySound),
+            .Set(x => x.NotificationEnabled, notificationItem.NotificationEnabled)
+            .Set(x => x.NotificationSoundEnabled, notificationItem.NotificationSoundEnabled)
+            .Set(x => x.SoundID, notificationItem.SoundID),
             new UpdateOptions { IsUpsert = true }, cancellationToken);
 
         if (result.IsAcknowledged)
