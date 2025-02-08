@@ -84,6 +84,8 @@
                 UserId = userId,
                 NotificationEnabled = im.NotificaionsEnabled,
                 NotificationSoundEnabled = im.PlaySound,
+                Created = DateTime.UtcNow,
+                LastChanged = DateTime.UtcNow,
                 SoundID = im.SoundID
             }, _cts.Token);
         }

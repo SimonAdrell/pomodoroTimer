@@ -1,6 +1,5 @@
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
-using NuGet.Common;
 
 namespace CoBySi.Pomodoro.Repository.Models;
 
