@@ -1,27 +1,19 @@
 using System;
+using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 
 namespace CoBySi.Pomodoro.Web.Handler;
 
-public class SessionHandler
+public static class SessionHandler
 {
     private const string SessionCookieName = "PomodoroSessionId";
-
-    public static string GetOrCreateSessionId(HttpContext? context)
+    public static async Task<string> GetOrCreateSessionIdAsync(this ProtectedLocalStorage protectedLocalStorage)
     {
-        if (context == null)
-            throw new InvalidOperationException("HttpContext is not available.");
-
-        if (context.Request.Cookies.TryGetValue(SessionCookieName, out var existingSessionId))
-            return existingSessionId;
+        var session = await protectedLocalStorage.GetAsync<Guid>(SessionCookieName);
+        if (session.Success && session.Value != Guid.Empty)
+            return session.Value.ToString();
 
         var newSessionId = Guid.NewGuid().ToString();
-        context.Response.Cookies.Append(SessionCookieName, newSessionId, new CookieOptions
-        {
-            HttpOnly = true,
-            Secure = context.Request.IsHttps,
-            Expires = DateTimeOffset.UtcNow.AddMonths(1)
-        });
-
+        await protectedLocalStorage.SetAsync(SessionCookieName, newSessionId);
         return newSessionId;
     }
 }

@@ -75,6 +75,8 @@ builder.Services.AddIdentityCore<PomodoroUser>(options => options.SignIn.Require
     .AddSignInManager()
     .AddDefaultTokenProviders();
 
+builder.Services.AddBlazorBootstrap();
+
 builder.Services.AddSingleton<IEmailSender<PomodoroUser>, EmailSender>();
 
 var app = builder.Build();

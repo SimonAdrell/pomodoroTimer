@@ -5,6 +5,7 @@
 @using CoBySi.Pomodoro.Web.Converter
 @using CoBySi.Pomodoro.Web.Handler
 @using CoBySi.Pomodoro.Web.Services
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
 @using Microsoft.AspNetCore.Identity
 @using Serilog
 
@@ -14,10 +15,12 @@
 @inject UserManager<PomodoroUser> userManager;
 @inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
 @inject IJSRuntime JS
+@inject ProtectedLocalStorage ProtectedLocalStorage;
+
 
 <audio id="timerSound" src="sounds/alert.mp3"></audio>
 <div class="mb-3 d-flex mt-5 flex-column align-items-center align-self-center" data-bs-theme="dark">
-    <div class="rounded-circle border border-success border-3 d-flex flex-column justify-content-center align-items-center"
+    <div class="rounded-circle border-success border-3 d-flex flex-column justify-content-center align-items-center"
         style="width: 300px; height: 300px;">
         <h3>
             @pomodoroState
@@ -62,8 +65,7 @@
                 userid = user.Id;
         }
         return await _pomodoroSettingsService.GetUserPomodoroSettingsAsync(userid,
-        SessionHandler.GetOrCreateSessionId(HttpContextAccessor.HttpContext),
-        _cts.Token);
+        await ProtectedLocalStorage.GetOrCreateSessionIdAsync(), _cts.Token);
     }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
