@@ -1,0 +1,44 @@
+﻿@using Serilog
+<Modal @ref="modal" title="Settings" IsVerticallyCentered="true">
+    <BodyTemplate>
+        <hr class="" />
+        <AuthorizeView>
+            <Authorized>
+                <div class="nav-item px-3">
+                    <NavLink class=" nav-link" href="account/manage">
+                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Manage account
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class=" nav-link" href="account/Logout">
+                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Logout
+                    </NavLink>
+                </div>
+            </Authorized>
+            <NotAuthorized>
+                <div class="nav-item px-3">
+                    <NavLink class=" nav-link" href="account/login">
+                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Login
+                    </NavLink>
+                </div>
+            </NotAuthorized>
+        </AuthorizeView>
+        <hr class="" />
+
+    </BodyTemplate>
+    <FooterTemplate>
+    </FooterTemplate>
+</Modal>
+<Button @onclick="OnShowModalClick">
+    <Icon Name="IconName.Person" Size="IconSize.x5" />
+</Button>
+@code {
+    private Modal modal = default!;
+
+    private async Task OnShowModalClick()
+    {
+        Log.Information("Show modal {@modal}", modal);
+        await modal.ShowAsync();
+    }
+
+}

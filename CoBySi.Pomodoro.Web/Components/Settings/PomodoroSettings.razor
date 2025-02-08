@@ -6,12 +6,15 @@
 @using CoBySi.Pomodoro.Web.Services
 @using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
 @using Microsoft.AspNetCore.Identity
+
 @inject UserManager<PomodoroUser> userManager;
 @inject IPomodoroSettingsService PomodoroSettingsService;
 @inject ProtectedLocalStorage ProtectedLocalStorage;
+
 <PageTitle>Manage pomodoro settings</PageTitle>
 
 @* <StatusMessage Message="@message" /> *@
+<h3 class="mt-3 mb-3">Pomodoro settings</h3>
 <EditForm FormName="edit-pomodorosettings" EditContext="editContext" OnValidSubmit="OnValidSubmitAsync">
     <DataAnnotationsValidator />
     <ValidationSummary class="text-danger" role="alert" />
@@ -47,8 +50,6 @@
     private string? sessionId;
     private EditContext? editContext;
     private string? message;
-    [CascadingParameter]
-    private HttpContext HttpContext { get; set; } = default!;
 
     [CascadingParameter]
     private Task<AuthenticationState> stateAuthenticate { get; set; }
@@ -84,7 +85,7 @@
             var authstate = await stateAuthenticate;
             if (authstate != null && authstate.User?.Identity != null && authstate.User.Identity.IsAuthenticated)
             {
-                var user = await userManager.GetUserAsync(HttpContext.User);
+                var user = await userManager.GetUserAsync(authstate.User);
                 if (user != null)
                     userId = user.Id;
             }
@@ -107,7 +108,7 @@
         var authstate = await stateAuthenticate;
         if (authstate != null && authstate.User?.Identity != null && authstate.User.Identity.IsAuthenticated)
         {
-            var user = await userManager.GetUserAsync(HttpContext.User);
+            var user = await userManager.GetUserAsync(authstate.User);
             if (user != null)
                 userId = user.Id;
         }
