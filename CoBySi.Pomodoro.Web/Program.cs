@@ -12,6 +12,7 @@ using CoBySi.Pomodoro.Web.Settings;
 using CoBySi.Pomodoro.Repository.settings;
 using CoBySi.Pomodoro.Web.Services;
 using CoBySi.Pomodoro.Web.Cache;
+using CoBySi.Pomodoro.Repository.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
