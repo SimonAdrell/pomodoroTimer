@@ -1,6 +1,7 @@
 ﻿@using CoBySi.Pomodoro
 @using CoBySi.Pomodoro.Models
 @using CoBySi.Pomodoro.Repository.Identity.Data
+@using CoBySi.Pomodoro.Repository.Repositories
 @using CoBySi.Pomodoro.Timer
 @using CoBySi.Pomodoro.Web.Converter
 @using CoBySi.Pomodoro.Web.Handler
@@ -48,9 +49,12 @@
     private int _breakCount;
     private CancellationTokenSource _cts = new();
 
-    public PomodoroComponent(IPomodoroSettingsService pomodoroSettingsService)
+    private readonly IUserSettingsRepository _userSettingsRepository;
+    public PomodoroComponent(IPomodoroSettingsService pomodoroSettingsService, IUserSettingsRepository
+    userSettingsRepository)
     {
         _pomodoroSettingsService = pomodoroSettingsService;
+        _userSettingsRepository = userSettingsRepository;
     }
 
     private async Task<PomodoroSettings> GetSettings()
@@ -132,8 +136,34 @@
     private async Task TimerFinished(PomodoroItem pomodoroItem)
     {
         StopListeners();
-        await PlayCompletionSound();
-        await NotifyTimerCompletion(pomodoroItem);
+        string userId = string.Empty;
+        var authstate = await stateAuthenticate;
+        if (authstate != null && authstate.User?.Identity != null && authstate.User.Identity.IsAuthenticated)
+        {
+            var user = await userManager.GetUserAsync(authstate.User);
+            if (user != null)
+                userId = user.Id;
+        }
+        if (string.IsNullOrEmpty(userId))
+        {
+            await PlayCompletionSound();
+            await NotifyTimerCompletion(pomodoroItem);
+            return;
+        }
+
+        var NotificationSettings = await _userSettingsRepository.GetUserNotificationSettingsAsync(userId, _cts.Token);
+        if (NotificationSettings is null)
+        {
+            await PlayCompletionSound();
+            await NotifyTimerCompletion(pomodoroItem);
+            return;
+        }
+        if (NotificationSettings.NotificationSoundEnabled)
+            await PlayCompletionSound();
+
+        if (NotificationSettings.NotificationEnabled)
+            await NotifyTimerCompletion(pomodoroItem);
+
         Log.Information("PomodoroItem {@pomocdoroItem}", pomodoroItem);
     }
 
