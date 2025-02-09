@@ -52,7 +52,7 @@
         if (!firstRender)
             return;
 
-        @* Input = await GetInputModel(); *@
+        Input = await GetInputModel();
         StateHasChanged();
     }
     private async Task TestNotification()
@@ -79,17 +79,38 @@
                 if (user != null)
                     userId = user.Id;
             }
-            Log.Information("Input model: {@im}", im);
+            Log.Information("Input model: {@im}", Input);
             await _userSettingsRepository.SaveNotificationItemAsync(new Repository.Models.NotificationEntity()
             {
                 UserId = userId,
-                NotificationEnabled = im.NotificaionsEnabled,
-                NotificationSoundEnabled = im.PlaySound,
+                NotificationEnabled = Input.NotificaionsEnabled,
+                NotificationSoundEnabled = Input.PlaySound,
                 Created = DateTime.UtcNow,
                 LastChanged = DateTime.UtcNow,
-                SoundID = im.SoundID
+                SoundID = Input.SoundID
             }, _cts.Token);
         }
+    }
+
+    private async Task<InputModel> GetInputModel()
+    {
+        string userId = string.Empty;
+        var authstate = await stateAuthenticate;
+        if (authstate != null && authstate.User?.Identity != null && authstate.User.Identity.IsAuthenticated)
+        {
+            var user = await userManager.GetUserAsync(authstate.User);
+            if (user != null)
+                userId = user.Id;
+        }
+        var settings = await _userSettingsRepository.GetUserNotificationSettingsAsync(userId, _cts.Token);
+        if (settings is null)
+            return new InputModel();
+        return new InputModel()
+        {
+            NotificaionsEnabled = settings.NotificationEnabled,
+            PlaySound = settings.NotificationSoundEnabled,
+            SoundID = settings.SoundID
+        };
     }
     private sealed class InputModel
     {
