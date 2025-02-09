@@ -23,7 +23,9 @@
             Test Notification
         </Button>
     </div>
-
+    <div class="md-3">
+        <h5>@message</h5>
+    </div>
     <button type="submit" class="w-100 btn btn-lg btn-primary">Save</button>
 </EditForm>
 
@@ -35,6 +37,7 @@
     private CancellationTokenSource _cts = new();
     [CascadingParameter]
     private Task<AuthenticationState> stateAuthenticate { get; set; }
+    private string message = string.Empty;
 
     public NotificationSettings(IUserSettingsRepository userSettingsRepository)
     {
@@ -89,6 +92,7 @@
                 LastChanged = DateTime.UtcNow,
                 SoundID = Input.SoundID
             }, _cts.Token);
+            message = "Notification settings saved";
         }
     }
 
