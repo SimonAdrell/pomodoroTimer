@@ -43,9 +43,9 @@ public class PomodoroComponentTest
             .GetUserPomodoroSettingsAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(new PomodoroSettings() { MinutesPerPomodoro = 25, MinutesPerShortBreak = 5, MinutesPerLongBreak = 15, PomodorosBeforeLongBreak = 4 });
 
-        ctx.Services.AddSingleton<IPomodoroSettingsService>(pomodoroSetingsService);
-        ctx.Services.AddSingleton<IUserSettingsRepository>(userSettingsRepository);
-        ctx.Services.AddSingleton<IPomodorHandler>(pomodorHandler);
+        ctx.Services.AddSingleton(pomodoroSetingsService);
+        ctx.Services.AddSingleton(userSettingsRepository);
+        ctx.Services.AddSingleton(pomodorHandler);
         ctx.Services.AddSingleton(jsRuntime);
         ctx.Services.AddSingleton(localStorageService);
         ctx.Services.AddSingleton(UserManager);
