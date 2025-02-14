@@ -60,12 +60,13 @@ public class PomodoroComponentTest
         var buttonElement = cut.Find("#startBtn");
         buttonElement.Click();
 
-        pomodorHandler.TimerChanged += Raise.EventWith(new TimerChangedEventArgs() { NumberOfSecondsLeft = 0, EventType = TimerEventType.Finished, Item = new PomodoroItem() { Status = PomodoroStatus.Pomodoro } });
+
+        pomodorHandler.TimerChangedAsync += Raise.Event<AsyncEventHandler<TimerChangedEventArgs>>(new TimerChangedEventArgs() { NumberOfSecondsLeft = 0, EventType = TimerEventType.Finished, Item = new PomodoroItem() { Status = PomodoroStatus.Pomodoro } });
 
 
         // Assert
         await notificationService.Received(1)
-            .InvokeNotificaionShow(Arg.Is<string>(s => s.Equals("Pomodoro Complete!")), Arg.Any<string>(), Arg.Any<string>());
+            .InvokeNotificaionShow(Arg.Is<string>(s => s.Equals("Pomodoro Complete!")), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>());
 
         await notificationService.Received(1)
             .InvokeNotificationPermissionAsync();
@@ -94,7 +95,7 @@ public class PomodoroComponentTest
 
         // Assert
         await notificationService.Received(1)
-            .InvokeNotificaionShow(Arg.Is<string>(s => s.Equals(expectedTitle)), Arg.Any<string>(), Arg.Any<string>());
+            .InvokeNotificaionShow(Arg.Is<string>(s => s.Equals(expectedTitle)), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>());
     }
 
     [Theory]
@@ -116,6 +117,6 @@ public class PomodoroComponentTest
 
         // Assert
         await notificationService.Received(1)
-            .InvokeNotificaionShow(Arg.Is<string>(s => s.Equals(expectedTitle)), Arg.Any<string>(), Arg.Any<string>());
+            .InvokeNotificaionShow(Arg.Any<string>(), Arg.Is<string>(s => s.Equals(expectedTitle)), Arg.Any<string>(), Arg.Any<string>());
     }
 }
