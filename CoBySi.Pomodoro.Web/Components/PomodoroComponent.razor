@@ -13,7 +13,6 @@
 
 @inject IPomodorHandler _pomodoroHandler
 @inject UserManager<PomodoroUser> userManager;
-@inject IJSRuntime JS
 @inject ILocalStorageService _localStorage;
 
 
@@ -46,11 +45,13 @@
     private readonly IPomodoroSettingsService _pomodoroSettingsService;
     private CancellationTokenSource _cts = new();
     private readonly IUserSettingsRepository _userSettingsRepository;
+    private readonly INotificationService _notificationService;
     public PomodoroComponent(IPomodoroSettingsService pomodoroSettingsService, IUserSettingsRepository
-    userSettingsRepository)
+    userSettingsRepository, INotificationService notificationService)
     {
         _pomodoroSettingsService = pomodoroSettingsService;
         _userSettingsRepository = userSettingsRepository;
+        _notificationService = notificationService;
     }
 
     private async Task<PomodoroSettings> GetSettings()
@@ -72,7 +73,7 @@
     {
         if (firstRender)
         {
-            await JS.InvokeVoidAsync("requestNotificationPermission");
+            await _notificationService.InvokeNotificationPermissionAsync();
 
             if (_pomodoroSettingsService == null)
                 throw new ArgumentNullException(nameof(_pomodoroSettingsService));
@@ -164,20 +165,16 @@
         Log.Information("PomodoroItem {@pomocdoroItem}", pomodoroItem);
     }
 
-    private async Task NotifyTimerCompletion(PomodoroItem pomodoroItem)
+    public async Task NotifyTimerCompletion(PomodoroItem pomodoroItem)
     {
-        var title = pomodoroItem.Status.HasFlag(PomodoroStatus.Pomodoro) ? "Pomodoro Complete!" : "Break Complete!";
-        var body = pomodoroItem.Status.HasFlag(PomodoroStatus.Pomodoro) ? "Time to take a break!" : "Time to work!";
+        var title = pomodoroItem.Status.Equals(PomodoroStatus.Pomodoro) ? "Pomodoro Complete!" : "Break Complete!";
+        var body = pomodoroItem.Status.Equals(PomodoroStatus.Pomodoro) ? "Time to take a break!" : "Time to work!";
         Log.Information("Notification {title}", title);
 
-        await JS.InvokeVoidAsync(
-        "showNotification",
-        title,
-        new { body = body, icon = "/images/myface_132.png" }
-        );
+        await _notificationService.InvokeNotificaionShow(title, body, "/images/myface_132.png");
     }
 
-    private async Task PlayCompletionSound() => await JS.InvokeVoidAsync("playSound", "timerSound");
+    private async Task PlayCompletionSound() => await _notificationService.PlayCompletionSoundAsync();
 
     private static string ConvertTimeSpanToMinutesSeconds(double? numberOfSeconds)
     {
