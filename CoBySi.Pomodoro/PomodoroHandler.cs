@@ -6,7 +6,7 @@ namespace CoBySi.Pomodoro;
 
 public class PomodorHandler : IPomodorHandler
 {
-    public event EventHandler<TimerChangedEventArgs>? TimerChanged;
+    public event AsyncEventHandler<TimerChangedEventArgs>? TimerChangedAsync;
     private double? _totalNumberOfSeconds { get; set; }
     private TimeProvider _timeProvider;
     private int _secondsElapsed;
@@ -30,41 +30,53 @@ public class PomodorHandler : IPomodorHandler
             StopTimer();
 
         _pomodoroSettings = pomodoroSettings;
-        _currentItem ??= new PomodoroItem
+        if (_currentItem != null)
         {
-            Status = PomodoroStatus.Pomodoro,
-            NumberOfPomodoros = 0,
-            TotalNumberOfSeconds = GetTotalNumberOfSeconds(PomodoroStatus.Pomodoro, pomodoroSettings),
-            Id = Guid.NewGuid()
-        };
+            _currentItem.Status = _currentItem.NextStatus;
+        }
+        else
+        {
+            _currentItem ??= new PomodoroItem
+            {
+                Status = PomodoroStatus.Pomodoro,
+                NumberOfPomodoros = 0,
+                TotalNumberOfSeconds = GetTotalNumberOfSeconds(PomodoroStatus.Pomodoro, pomodoroSettings),
+                Id = Guid.NewGuid()
+            };
+        }
+
         _secondsElapsed = 0;
         _totalNumberOfSeconds = _currentItem.TotalNumberOfSeconds;
         _pomodoroTimer = _timeProvider.CreateTimer(TimerCallback, _currentItem, TimeSpan.Zero, TimeSpan.FromSeconds(1));
 
         Log.Information("Started {id} {State}", _currentItem.Id, _currentItem.Status);
     }
-    private void TimerCallback(object? state)
+    private async void TimerCallback(object? state)
     {
         if (state is PomodoroItem pomodoroItem)
-            Tick(pomodoroItem);
+            await Tick(pomodoroItem);
     }
 
-    private void Tick(PomodoroItem pomodoroItem)
+    private async Task Tick(PomodoroItem pomodoroItem)
     {
         if (_secondsElapsed == _totalNumberOfSeconds)
         {
             StopTimer();
             pomodoroItem = TimerFinished(pomodoroItem);
 
-            TimerChanged?.Invoke(this,
-               new TimerChangedEventArgs { NumberOfSecondsLeft = pomodoroItem.TotalNumberOfSeconds, Item = pomodoroItem, EventType = TimerEventType.Finished });
+            if (TimerChangedAsync is not null)
+                await TimerChangedAsync(this,
+                    new TimerChangedEventArgs { NumberOfSecondsLeft = pomodoroItem.TotalNumberOfSeconds, Item = pomodoroItem, EventType = TimerEventType.Finished });
+
             _secondsElapsed++;
             return;
         }
         else
         {
-            TimerChanged?.Invoke(this,
-               new TimerChangedEventArgs { NumberOfSecondsLeft = _totalNumberOfSeconds - _secondsElapsed, Item = pomodoroItem, EventType = TimerEventType.Tick });
+            if (TimerChangedAsync is not null)
+                await TimerChangedAsync(this,
+                    new TimerChangedEventArgs { NumberOfSecondsLeft = _totalNumberOfSeconds - _secondsElapsed, Item = pomodoroItem, EventType = TimerEventType.Tick });
+
             _secondsElapsed++;
         }
         Log.Information("Tick {id} Seconds elapseds {_secondsElapsed}", pomodoroItem.Id, _secondsElapsed);
@@ -76,19 +88,19 @@ public class PomodorHandler : IPomodorHandler
         {
             if (pomodoroItem.NumberOfPomodoros >= _pomodoroSettings?.PomodorosBeforeLongBreak)
             {
-                pomodoroItem.Status = PomodoroStatus.LongBreak;
+                pomodoroItem.NextStatus = PomodoroStatus.LongBreak;
                 pomodoroItem.NumberOfPomodoros = 0;
                 return pomodoroItem;
             }
 
-            pomodoroItem.Status = PomodoroStatus.ShortBreak;
+            pomodoroItem.NextStatus = PomodoroStatus.ShortBreak;
             pomodoroItem.NumberOfPomodoros++;
         }
         else
         {
-            pomodoroItem.Status = PomodoroStatus.Pomodoro;
+            pomodoroItem.NextStatus = PomodoroStatus.Pomodoro;
         }
-        pomodoroItem.TotalNumberOfSeconds = GetTotalNumberOfSeconds(pomodoroItem.Status, _pomodoroSettings);
+        pomodoroItem.TotalNumberOfSeconds = GetTotalNumberOfSeconds(pomodoroItem.NextStatus, _pomodoroSettings);
         return pomodoroItem;
     }
     private void StopTimer()

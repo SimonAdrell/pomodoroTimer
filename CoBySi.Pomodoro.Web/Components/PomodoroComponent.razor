@@ -119,14 +119,15 @@
         if (_pomodoroHandler == null)
             throw new ArgumentNullException(nameof(_pomodoroHandler));
 
-        _pomodoroHandler.TimerChanged += async (s, e) => await PomodorHandler_TimerChanged(s, e);
+        _pomodoroHandler.TimerChangedAsync += PomodorHandler_TimerChanged;
+
     }
     private void StopListeners()
     {
         if (_pomodoroHandler == null)
             throw new ArgumentNullException(nameof(_pomodoroHandler));
 
-        _pomodoroHandler.TimerChanged -= async (s, e) => await PomodorHandler_TimerChanged(s, e);
+        _pomodoroHandler.TimerChangedAsync -= PomodorHandler_TimerChanged;
     }
 
 
@@ -136,17 +137,21 @@
         if (e.Item is null)
             return;
 
-        if (e.EventType.HasFlag(TimerEventType.Finished))
+        if (e.EventType.Equals(TimerEventType.Finished))
             await TimerFinished(e.Item);
 
         currentMinutesSeconds = ConvertTimeSpanToMinutesSeconds(e.NumberOfSecondsLeft);
         SetPomodoroState(e.Item.Status);
+
         await this.InvokeAsync(() => StateHasChanged());
     }
 
     private async Task TimerFinished(PomodoroItem pomodoroItem)
     {
+        isActive = false;
         StopListeners();
+        SetPomodoroState(pomodoroItem.Status);
+
         string userId = string.Empty;
         var authstate = await stateAuthenticate;
         if (authstate != null && authstate.User?.Identity != null && authstate.User.Identity.IsAuthenticated)
@@ -176,15 +181,16 @@
             await NotifyTimerCompletion(pomodoroItem);
 
         Log.Information("PomodoroItem {@pomocdoroItem}", pomodoroItem);
+
     }
 
     public async Task NotifyTimerCompletion(PomodoroItem pomodoroItem)
     {
         var title = pomodoroItem.Status.Equals(PomodoroStatus.Pomodoro) ? "Pomodoro Complete!" : "Break Complete!";
         var body = pomodoroItem.Status.Equals(PomodoroStatus.Pomodoro) ? "Time to take a break!" : "Time to work!";
-        Log.Information("Notification {title}", title);
 
-        await _notificationService.InvokeNotificaionShow(title, body, "/images/myface_132.png");
+        await _notificationService.InvokeNotificaionShow(title, body, "/images/myface_132.png",
+        $"{pomodoroItem.NumberOfPomodoros}:{pomodoroItem.Status}:{pomodoroItem.Id}");
     }
 
     private async Task PlayCompletionSound() => await _notificationService.PlayCompletionSoundAsync();

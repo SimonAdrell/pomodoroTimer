@@ -44,7 +44,7 @@ public class PomodorHandlerTest
         };
         var pomodoroHandler = new PomodorHandler(timeProvider);
         var raised = false;
-        pomodoroHandler.TimerChanged += (sender, args) => { raised = args.EventType.HasFlag(Models.TimerEventType.Finished); };
+        pomodoroHandler.TimerChanged += (sender, args) => { raised = args.EventType.Equals(Models.TimerEventType.Finished); };
 
         // Act
         pomodoroHandler.StartNext(pomodoroSettings);
@@ -66,7 +66,7 @@ public class PomodorHandlerTest
         var pomodoroHandler = new PomodorHandler(timeProvider);
         var raised = false;
         int ticks = 0;
-        pomodoroHandler.TimerChanged += (sender, args) => raised = args.EventType.HasFlag(Models.TimerEventType.Finished);
+        pomodoroHandler.TimerChanged += (sender, args) => raised = args.EventType.Equals(Models.TimerEventType.Finished);
         pomodoroHandler.TimerChanged += (sender, args) => ticks++;
 
         // Act
