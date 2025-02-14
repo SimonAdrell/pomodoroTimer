@@ -27,18 +27,29 @@
             @currentMinutesSeconds
         </h1>
         <div class=" flex-row d-flex mt-2">
-            <div class=" p-2">
-                <button class="btn btn-link" id="startBtn" @onclick="StartNext">Start</button>
-            </div>
-            <div class="p-2 border-start border-success-emphasis border-3">
-                <button class="btn btn-link" @onclick="StopPomodoro">Stop</button>
-            </div>
+            @if (!isActive)
+            {
+                <div class=" p-2">
+                    <button class="btn btn-link" id="startBtn" @onclick="StartNext">
+                        <Icon Name="IconName.Play" Size="IconSize.x1" />
+                    </button>
+                </div>
+            }
+            else
+            {
+                <div class="p-2">
+                    <button class="btn btn-link" @onclick="StopPomodoro">
+                        <Icon Name="IconName.Stop" Size="IconSize.x1" />
+                    </button>
+                </div>
+            }
         </div>
     </div>
 </div>
 @code {
     private string? currentMinutesSeconds;
     private string? pomodoroState;
+    private bool isActive = false;
 
     [CascadingParameter]
     private Task<AuthenticationState> stateAuthenticate { get; set; }
@@ -89,6 +100,7 @@
 
     private async Task StopPomodoro()
     {
+        isActive = false;
         var pomodoroSettings = await GetSettings();
         _pomodoroHandler?.Stop();
         StopListeners();
@@ -96,6 +108,7 @@
 
     private async Task StartNext()
     {
+        isActive = true;
         var pomodoroSettings = await GetSettings();
         _pomodoroHandler.StartNext(pomodoroSettings);
         StartListeners();
