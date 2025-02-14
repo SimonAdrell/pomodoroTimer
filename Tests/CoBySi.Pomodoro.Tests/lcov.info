@@ -1,4 +1,4 @@
-SF:c:\Users\simon\Documents\projects\pomodoroTimer\CoBySi.Pomodoro\Models\PomodoroSettings.cs
+SF:c:\Users\simon\source\repos\pomodoroTimer\CoBySi.Pomodoro\Models\PomodoroSettings.cs
 FN:4,System.Double CoBySi.Pomodoro.PomodoroSettings::get_MinutesPerPomodoro()
 FNDA:0,System.Double CoBySi.Pomodoro.PomodoroSettings::get_MinutesPerPomodoro()
 DA:5,0
@@ -18,31 +18,24 @@ BRH:0
 FNF:4
 FNH:0
 end_of_record
-SF:c:\Users\simon\Documents\projects\pomodoroTimer\CoBySi.Pomodoro\PomodorHandler.cs
+SF:c:\Users\simon\source\repos\pomodoroTimer\CoBySi.Pomodoro\PomodoroHandler.cs
 FN:9,System.Nullable`1<System.Double> CoBySi.Pomodoro.PomodorHandler::get__totalNumberOfSeconds()
 FNDA:0,System.Nullable`1<System.Double> CoBySi.Pomodoro.PomodorHandler::get__totalNumberOfSeconds()
 DA:10,0
-FN:21,System.Void CoBySi.Pomodoro.PomodorHandler::Start(CoBySi.Pomodoro.Timer.PomodoroState,System.Nullable`1<System.Double>)
-FNDA:0,System.Void CoBySi.Pomodoro.PomodorHandler::Start(CoBySi.Pomodoro.Timer.PomodoroState,System.Nullable`1<System.Double>)
-DA:22,0
+FN:22,System.Boolean CoBySi.Pomodoro.PomodorHandler::IsRunning()
+FNDA:0,System.Boolean CoBySi.Pomodoro.PomodorHandler::IsRunning()
 DA:23,0
 DA:24,0
 DA:25,0
-DA:26,0
-DA:27,0
+FN:27,System.Void CoBySi.Pomodoro.PomodorHandler::StartNext(CoBySi.Pomodoro.PomodoroSettings)
+FNDA:0,System.Void CoBySi.Pomodoro.PomodorHandler::StartNext(CoBySi.Pomodoro.PomodoroSettings)
 DA:28,0
 DA:29,0
-BRDA:27,84,0,0
-BRDA:27,84,1,0
-BRDA:27,118,0,0
-BRDA:27,118,1,0
-FN:30,System.Void CoBySi.Pomodoro.PomodorHandler::TimerCallback(System.Object)
-FNDA:0,System.Void CoBySi.Pomodoro.PomodorHandler::TimerCallback(System.Object)
-DA:31,0
+DA:30,0
 DA:32,0
 DA:33,0
-FN:35,System.Void CoBySi.Pomodoro.PomodorHandler::Tick()
-FNDA:0,System.Void CoBySi.Pomodoro.PomodorHandler::Tick()
+DA:34,0
+DA:35,0
 DA:36,0
 DA:37,0
 DA:38,0
@@ -52,69 +45,153 @@ DA:41,0
 DA:42,0
 DA:43,0
 DA:44,0
-DA:45,0
-BRDA:38,22,0,0
-BRDA:38,22,1,0
-BRDA:38,56,0,0
-BRDA:38,56,1,0
-BRDA:39,141,0,0
-BRDA:42,158,0,0
-BRDA:42,158,1,0
-BRDA:39,141,1,0
-FN:47,System.Void CoBySi.Pomodoro.PomodorHandler::StopTimer()
-FNDA:0,System.Void CoBySi.Pomodoro.PomodorHandler::StopTimer()
+BRDA:29,9,0,0
+BRDA:29,9,1,0
+BRDA:33,31,0,0
+BRDA:33,31,1,0
+FN:45,System.Void CoBySi.Pomodoro.PomodorHandler::TimerCallback(System.Object)
+FNDA:0,System.Void CoBySi.Pomodoro.PomodorHandler::TimerCallback(System.Object)
+DA:46,0
+DA:47,0
 DA:48,0
 DA:49,0
-DA:50,0
-BRDA:49,8,0,0
-BRDA:49,8,1,0
-FN:52,System.Void CoBySi.Pomodoro.PomodorHandler::Stop(System.Nullable`1<System.Double>)
-FNDA:0,System.Void CoBySi.Pomodoro.PomodorHandler::Stop(System.Nullable`1<System.Double>)
+BRDA:47,14,0,0
+BRDA:47,14,1,0
+FN:51,System.Void CoBySi.Pomodoro.PomodorHandler::Tick(CoBySi.Pomodoro.Models.PomodoroItem)
+FNDA:0,System.Void CoBySi.Pomodoro.PomodorHandler::Tick(CoBySi.Pomodoro.Models.PomodoroItem)
+DA:52,0
 DA:53,0
 DA:54,0
 DA:55,0
 DA:56,0
-DA:57,0
 DA:58,0
-BRDA:57,30,0,0
-BRDA:57,30,1,0
-BRDA:57,59,0,0
-BRDA:57,59,1,0
-FN:15,System.Void CoBySi.Pomodoro.PomodorHandler::.ctor(System.TimeProvider)
+DA:59,0
+DA:60,0
+DA:61,0
+DA:64,0
+DA:65,0
+DA:66,0
+DA:67,0
+DA:68,0
+DA:69,0
+DA:70,0
+BRDA:53,34,0,0
+BRDA:58,60,0,0
+BRDA:58,60,1,0
+BRDA:53,34,1,0
+BRDA:65,138,0,0
+BRDA:65,138,1,0
+BRDA:65,172,0,0
+BRDA:65,172,1,0
+FN:72,CoBySi.Pomodoro.Models.PomodoroItem CoBySi.Pomodoro.PomodorHandler::TimerFinished(CoBySi.Pomodoro.Models.PomodoroItem)
+FNDA:0,CoBySi.Pomodoro.Models.PomodoroItem CoBySi.Pomodoro.PomodorHandler::TimerFinished(CoBySi.Pomodoro.Models.PomodoroItem)
+DA:73,0
+DA:74,0
+DA:75,0
+DA:76,0
+DA:77,0
+DA:78,0
+DA:79,0
+DA:80,0
+DA:83,0
+DA:84,0
+DA:85,0
+DA:87,0
+DA:88,0
+DA:89,0
+DA:90,0
+DA:91,0
+DA:92,0
+BRDA:74,12,0,0
+BRDA:76,29,0,0
+BRDA:76,29,1,0
+BRDA:76,76,0,0
+BRDA:76,76,1,0
+BRDA:74,12,1,0
+FN:93,System.Void CoBySi.Pomodoro.PomodorHandler::StopTimer()
+FNDA:0,System.Void CoBySi.Pomodoro.PomodorHandler::StopTimer()
+DA:94,0
+DA:95,0
+DA:96,0
+DA:97,0
+DA:98,0
+BRDA:95,8,0,0
+BRDA:95,8,1,0
+BRDA:96,36,0,0
+BRDA:96,36,1,0
+FN:100,System.Void CoBySi.Pomodoro.PomodorHandler::Stop()
+FNDA:0,System.Void CoBySi.Pomodoro.PomodorHandler::Stop()
+DA:101,0
+DA:102,0
+DA:103,0
+DA:104,0
+FN:107,System.Double CoBySi.Pomodoro.PomodorHandler::GetTotalNumberOfSeconds(CoBySi.Pomodoro.Timer.PomodoroStatus,CoBySi.Pomodoro.PomodoroSettings)
+FNDA:0,System.Double CoBySi.Pomodoro.PomodorHandler::GetTotalNumberOfSeconds(CoBySi.Pomodoro.Timer.PomodoroStatus,CoBySi.Pomodoro.PomodoroSettings)
+DA:108,0
+DA:109,0
+DA:110,0
+DA:111,0
+DA:112,0
+DA:113,0
+DA:114,0
+DA:115,0
+BRDA:109,7,0,0
+BRDA:109,7,1,0
+BRDA:109,13,1,0
+BRDA:109,13,0,0
+FN:16,System.Void CoBySi.Pomodoro.PomodorHandler::.ctor(System.TimeProvider)
 FNDA:0,System.Void CoBySi.Pomodoro.PomodorHandler::.ctor(System.TimeProvider)
-DA:16,0
 DA:17,0
 DA:18,0
 DA:19,0
-LF:35
+DA:20,0
+LF:78
 LH:0
-BRF:18
+BRF:28
 BRH:0
-FNF:7
+FNF:10
 FNH:0
 end_of_record
-SF:c:\Users\simon\Documents\projects\pomodoroTimer\CoBySi.Pomodoro\Timer\TimeChangedEventArgs.cs
-FN:4,System.Nullable`1<System.Double> CoBySi.Pomodoro.Timer.TimeChangedEventArgs::get_NumberOfSecondsLeft()
-FNDA:0,System.Nullable`1<System.Double> CoBySi.Pomodoro.Timer.TimeChangedEventArgs::get_NumberOfSecondsLeft()
-DA:5,0
-FN:5,CoBySi.Pomodoro.Timer.PomodoroState CoBySi.Pomodoro.Timer.TimeChangedEventArgs::get_State()
-FNDA:0,CoBySi.Pomodoro.Timer.PomodoroState CoBySi.Pomodoro.Timer.TimeChangedEventArgs::get_State()
-DA:6,0
-LF:2
+SF:c:\Users\simon\source\repos\pomodoroTimer\CoBySi.Pomodoro\Timer\TimerChangedEventArgs.cs
+FN:6,System.Nullable`1<System.Double> CoBySi.Pomodoro.Timer.TimerChangedEventArgs::get_NumberOfSecondsLeft()
+FNDA:0,System.Nullable`1<System.Double> CoBySi.Pomodoro.Timer.TimerChangedEventArgs::get_NumberOfSecondsLeft()
+DA:7,0
+FN:7,CoBySi.Pomodoro.Models.PomodoroItem CoBySi.Pomodoro.Timer.TimerChangedEventArgs::get_Item()
+FNDA:0,CoBySi.Pomodoro.Models.PomodoroItem CoBySi.Pomodoro.Timer.TimerChangedEventArgs::get_Item()
+DA:8,0
+FN:8,CoBySi.Pomodoro.Models.TimerEventType CoBySi.Pomodoro.Timer.TimerChangedEventArgs::get_EventType()
+FNDA:0,CoBySi.Pomodoro.Models.TimerEventType CoBySi.Pomodoro.Timer.TimerChangedEventArgs::get_EventType()
+DA:9,0
+LF:3
 LH:0
 BRF:0
 BRH:0
-FNF:2
+FNF:3
 FNH:0
 end_of_record
-SF:c:\Users\simon\Documents\projects\pomodoroTimer\CoBySi.Pomodoro\Timer\TimerFinishedEventArgs.cs
-FN:4,CoBySi.Pomodoro.Timer.PomodoroState CoBySi.Pomodoro.Timer.TimerFinishedEventArgs::get_StateFinished()
-FNDA:0,CoBySi.Pomodoro.Timer.PomodoroState CoBySi.Pomodoro.Timer.TimerFinishedEventArgs::get_StateFinished()
-DA:5,0
-LF:1
+SF:c:\Users\simon\source\repos\pomodoroTimer\CoBySi.Pomodoro\Models\PomodoroItem.cs
+FN:6,System.Guid CoBySi.Pomodoro.Models.PomodoroItem::get_Id()
+FNDA:0,System.Guid CoBySi.Pomodoro.Models.PomodoroItem::get_Id()
+DA:7,0
+FN:7,CoBySi.Pomodoro.Timer.PomodoroStatus CoBySi.Pomodoro.Models.PomodoroItem::get_Status()
+FNDA:0,CoBySi.Pomodoro.Timer.PomodoroStatus CoBySi.Pomodoro.Models.PomodoroItem::get_Status()
+DA:8,0
+FN:8,System.Double CoBySi.Pomodoro.Models.PomodoroItem::get_TotalNumberOfSeconds()
+FNDA:0,System.Double CoBySi.Pomodoro.Models.PomodoroItem::get_TotalNumberOfSeconds()
+DA:9,0
+FN:9,System.String CoBySi.Pomodoro.Models.PomodoroItem::get_UserId()
+FNDA:0,System.String CoBySi.Pomodoro.Models.PomodoroItem::get_UserId()
+DA:10,0
+FN:10,System.String CoBySi.Pomodoro.Models.PomodoroItem::get_SessionID()
+FNDA:0,System.String CoBySi.Pomodoro.Models.PomodoroItem::get_SessionID()
+DA:11,0
+FN:11,System.Int32 CoBySi.Pomodoro.Models.PomodoroItem::get_NumberOfPomodoros()
+FNDA:0,System.Int32 CoBySi.Pomodoro.Models.PomodoroItem::get_NumberOfPomodoros()
+DA:12,0
+LF:6
 LH:0
 BRF:0
 BRH:0
-FNF:1
+FNF:6
 FNH:0
 end_of_record

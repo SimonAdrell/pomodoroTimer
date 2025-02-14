@@ -4,7 +4,6 @@
 @using CoBySi.Pomodoro.Repository.Repositories
 @using CoBySi.Pomodoro.Timer
 @using CoBySi.Pomodoro.Web.Converter
-@using CoBySi.Pomodoro.Web.Handler
 @using CoBySi.Pomodoro.Web.Services
 @using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
 @using Microsoft.AspNetCore.Identity
@@ -14,9 +13,8 @@
 
 @inject IPomodorHandler _pomodoroHandler
 @inject UserManager<PomodoroUser> userManager;
-@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
 @inject IJSRuntime JS
-@inject ProtectedLocalStorage ProtectedLocalStorage;
+@inject ILocalStorageService _localStorage;
 
 
 <audio id="timerSound" src="sounds/alert.mp3"></audio>
@@ -31,7 +29,7 @@
         </h1>
         <div class=" flex-row d-flex mt-2">
             <div class=" p-2">
-                <button class="btn btn-link" @onclick="StartNext">Start</button>
+                <button class="btn btn-link" id="startBtn" @onclick="StartNext">Start</button>
             </div>
             <div class="p-2 border-start border-success-emphasis border-3">
                 <button class="btn btn-link" @onclick="StopPomodoro">Stop</button>
@@ -46,9 +44,7 @@
     [CascadingParameter]
     private Task<AuthenticationState> stateAuthenticate { get; set; }
     private readonly IPomodoroSettingsService _pomodoroSettingsService;
-    private int _breakCount;
     private CancellationTokenSource _cts = new();
-
     private readonly IUserSettingsRepository _userSettingsRepository;
     public PomodoroComponent(IPomodoroSettingsService pomodoroSettingsService, IUserSettingsRepository
     userSettingsRepository)
@@ -68,8 +64,9 @@
             if (user != null)
                 userid = user.Id;
         }
+
         return await _pomodoroSettingsService.GetUserPomodoroSettingsAsync(userid,
-        await ProtectedLocalStorage.GetOrCreateSessionIdAsync(), _cts.Token);
+        await _localStorage.GetOrCreateSessionIdAsync(), _cts.Token);
     }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

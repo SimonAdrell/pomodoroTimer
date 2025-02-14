@@ -37,9 +37,10 @@ public class PomodorHandler : IPomodorHandler
             TotalNumberOfSeconds = GetTotalNumberOfSeconds(PomodoroStatus.Pomodoro, pomodoroSettings),
             Id = Guid.NewGuid()
         };
-        _pomodoroTimer = _timeProvider.CreateTimer(TimerCallback, _currentItem, TimeSpan.Zero, TimeSpan.FromSeconds(1));
         _secondsElapsed = 0;
         _totalNumberOfSeconds = _currentItem.TotalNumberOfSeconds;
+        _pomodoroTimer = _timeProvider.CreateTimer(TimerCallback, _currentItem, TimeSpan.Zero, TimeSpan.FromSeconds(1));
+
         Log.Information("Started {id} {State}", _currentItem.Id, _currentItem.Status);
     }
     private void TimerCallback(object? state)
@@ -77,7 +78,7 @@ public class PomodorHandler : IPomodorHandler
             {
                 pomodoroItem.Status = PomodoroStatus.LongBreak;
                 pomodoroItem.NumberOfPomodoros = 0;
-                return pomodoroItem;    
+                return pomodoroItem;
             }
 
             pomodoroItem.Status = PomodoroStatus.ShortBreak;

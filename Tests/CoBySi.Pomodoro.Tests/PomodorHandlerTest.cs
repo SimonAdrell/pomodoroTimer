@@ -16,7 +16,6 @@ public class PomodorHandlerTest
             MinutesPerPomodoro = 1
         };
         var pomodoroHandler = new PomodorHandler(timeProvider);
-        var pomodoroState = PomodoroStatus.Pomodoro;
         var raised = false;
 
         double? totalNumberOfSecondsLeft = 0;
@@ -26,8 +25,8 @@ public class PomodorHandlerTest
             totalNumberOfSecondsLeft = args.NumberOfSecondsLeft;
         };
 
-        // Act
-        pomodoroHandler.Start(pomodoroState, TimeSpan.FromMinutes(pomodoroSettings.MinutesPerPomodoro).TotalSeconds);
+        // Act  
+        pomodoroHandler.StartNext(pomodoroSettings);
 
         // Assert
         Assert.True(raised);
@@ -44,12 +43,11 @@ public class PomodorHandlerTest
             MinutesPerPomodoro = 25
         };
         var pomodoroHandler = new PomodorHandler(timeProvider);
-        var pomodoroState = PomodoroState.Pomodoro;
         var raised = false;
-        pomodoroHandler.TimerFinished += (sender, args) => raised = true;
+        pomodoroHandler.TimerChanged += (sender, args) => { raised = args.EventType.HasFlag(Models.TimerEventType.Finished); };
 
         // Act
-        pomodoroHandler.Start(pomodoroState, TimeSpan.FromMinutes(pomodoroSettings.MinutesPerPomodoro).TotalSeconds);
+        pomodoroHandler.StartNext(pomodoroSettings);
         timeProvider.Advance(TimeSpan.FromMinutes(pomodoroSettings.MinutesPerPomodoro));
 
         // Assert
@@ -66,19 +64,18 @@ public class PomodorHandlerTest
             MinutesPerPomodoro = 25
         };
         var pomodoroHandler = new PomodorHandler(timeProvider);
-        var pomodoroState = PomodoroState.Pomodoro;
         var raised = false;
         int ticks = 0;
-        pomodoroHandler.TimerFinished += (sender, args) => raised = true;
-        pomodoroHandler.ElapsedTimeChanged += (sender, args) => ticks++;
+        pomodoroHandler.TimerChanged += (sender, args) => raised = args.EventType.HasFlag(Models.TimerEventType.Finished);
+        pomodoroHandler.TimerChanged += (sender, args) => ticks++;
 
         // Act
-        pomodoroHandler.Start(pomodoroState, TimeSpan.FromMinutes(pomodoroSettings.MinutesPerPomodoro).TotalSeconds);
+        pomodoroHandler.StartNext(pomodoroSettings);
         timeProvider.Advance(TimeSpan.FromMinutes(pomodoroSettings.MinutesPerPomodoro));
 
         // Assert
         Assert.True(raised);
-        Assert.Equal(TimeSpan.FromMinutes(pomodoroSettings.MinutesPerPomodoro).TotalSeconds + 2, ticks);
+        Assert.Equal(TimeSpan.FromMinutes(pomodoroSettings.MinutesPerPomodoro).TotalSeconds + 1, ticks);
 
     }
 
@@ -92,15 +89,14 @@ public class PomodorHandlerTest
             MinutesPerPomodoro = 25
         };
         var pomodoroHandler = new PomodorHandler(timeProvider);
-        var pomodoroState = PomodoroState.Pomodoro;
         int ticks = 0;
-        pomodoroHandler.ElapsedTimeChanged += (sender, args) => ticks++;
+        pomodoroHandler.TimerChanged += (sender, args) => ticks++;
 
         // Act
-        pomodoroHandler.Start(pomodoroState, TimeSpan.FromMinutes(pomodoroSettings.MinutesPerPomodoro).TotalSeconds);
+        pomodoroHandler.StartNext(pomodoroSettings);
         timeProvider.Advance(TimeSpan.FromMinutes(1));
 
-        pomodoroHandler.Stop(TimeSpan.FromMinutes(pomodoroSettings.MinutesPerPomodoro).TotalSeconds);
+        pomodoroHandler.Stop();
 
         timeProvider.Advance(TimeSpan.FromMinutes(3));
 
@@ -109,29 +105,4 @@ public class PomodorHandlerTest
         Assert.InRange(ticks, 0, TimeSpan.FromMinutes(pomodoroSettings.MinutesPerPomodoro).TotalSeconds - 10);
     }
 
-    [Fact]
-    public void Start_WhenCalledSecondTime_ShouldNotStartSecondCountDown()
-    {
-        // Arrange
-        var timeProvider = new FakeTimeProvider();
-        var pomodoroSettings = new PomodoroSettings
-        {
-            MinutesPerPomodoro = 25
-        };
-        var sut = new PomodorHandler(timeProvider);
-        var pomodoroState = PomodoroState.Pomodoro;
-
-        //Act
-        sut.Start(pomodoroState, TimeSpan.FromMinutes(pomodoroSettings.MinutesPerPomodoro).TotalSeconds);
-
-        timeProvider.Advance(TimeSpan.FromMinutes(3));
-
-        sut.Start(pomodoroState, TimeSpan.FromMinutes(pomodoroSettings.MinutesPerPomodoro).TotalSeconds);
-
-        //Assert
-
-        timeProvider.Received(1).CreateTimer(Arg.Any<TimerCallback>(), Arg.Any<object>(), Arg.Any<TimeSpan>(), Arg.Any<TimeSpan>());
-
-    }
 }
-

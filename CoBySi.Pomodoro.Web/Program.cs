@@ -36,6 +36,7 @@ builder.Services.AddRazorComponents()
 builder.Services.AddSingleton<IPomodorHandler, PomodorHandler>();
 builder.Services.AddSingleton<IUserSettingsRepository, UserSettingsRepository>();
 builder.Services.AddSingleton<IPomodoroSettingsService, PomodoroSettingsService>();
+builder.Services.AddSingleton<ILocalStorageService, LocalStorageService>();
 
 builder.Services.Configure<PomodoroSettings>(builder.Configuration.GetSection("PomodoroSettings"));
 
