@@ -96,4 +96,26 @@ public class PomodoroComponentTest
         await notificationService.Received(1)
             .InvokeNotificaionShow(Arg.Is<string>(s => s.Equals(expectedTitle)), Arg.Any<string>(), Arg.Any<string>());
     }
+
+    [Theory]
+    [InlineData(PomodoroStatus.Pomodoro, "Time to take a break!")]
+    [InlineData(PomodoroStatus.LongBreak, "Time to work!")]
+    [InlineData(PomodoroStatus.ShortBreak, "Time to work!")]
+    public async Task NotifyTimerCompletion_PomodoroStatus_CorrectBody(PomodoroStatus pomodoroStatus, string expectedTitle)
+    {
+        // Arrange
+        var pomodoroSettingsService = Substitute.For<IPomodoroSettingsService>();
+        var userSettingsRepository = Substitute.For<IUserSettingsRepository>();
+        var notificationService = Substitute.For<INotificationService>();
+
+        var pomodoroComponent = new PomodoroComponent(pomodoroSettingsService, userSettingsRepository, notificationService);
+        var pomodoroItem = new PomodoroItem() { Status = pomodoroStatus };
+
+        // Act 
+        await pomodoroComponent.NotifyTimerCompletion(pomodoroItem);
+
+        // Assert
+        await notificationService.Received(1)
+            .InvokeNotificaionShow(Arg.Is<string>(s => s.Equals(expectedTitle)), Arg.Any<string>(), Arg.Any<string>());
+    }
 }
