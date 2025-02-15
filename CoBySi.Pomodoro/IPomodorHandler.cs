@@ -5,7 +5,7 @@ namespace CoBySi.Pomodoro;
 
 public interface IPomodorHandler
 {
-    event EventHandler<TimerChangedEventArgs>? TimerChanged;
+    event AsyncEventHandler<TimerChangedEventArgs>? TimerChangedAsync;
     void StartNext(PomodoroSettings? pomodoroSettings);
     void Stop();
     bool IsRunning();

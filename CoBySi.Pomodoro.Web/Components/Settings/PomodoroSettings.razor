@@ -2,14 +2,13 @@
 @using CoBySi.Pomodoro.Repository.Identity.Data
 @using CoBySi.Pomodoro.Web.Components.Account
 @using CoBySi.Pomodoro.Web.Components.Account.Shared
-@using CoBySi.Pomodoro.Web.Handler
 @using CoBySi.Pomodoro.Web.Services
 @using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
 @using Microsoft.AspNetCore.Identity
 
 @inject UserManager<PomodoroUser> userManager;
 @inject IPomodoroSettingsService PomodoroSettingsService;
-@inject ProtectedLocalStorage ProtectedLocalStorage;
+@inject ILocalStorageService _localStorage;
 
 <PageTitle>Manage pomodoro settings</PageTitle>
 
@@ -69,7 +68,7 @@
         if (!firstRender)
             return;
 
-        sessionId = await ProtectedLocalStorage.GetOrCreateSessionIdAsync();
+        sessionId = await _localStorage.GetOrCreateSessionIdAsync();
         Input = await GetInputModel();
         StateHasChanged();
     }
