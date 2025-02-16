@@ -1,0 +1,39 @@
+﻿@using Serilog
+<Modal @ref="modal" title="Settings" IsVerticallyCentered="true" CloseOnEscape="true">
+    <BodyTemplate>
+        <PomodoroSettings></PomodoroSettings>
+        <hr class="" />
+        <AuthorizeView>
+            <Authorized>
+                <NotificationSettings></NotificationSettings>
+            </Authorized>
+            <NotAuthorized>
+                <div class="px-3">
+                    <h3>Login to change notification settings</h3>
+                </div>
+            </NotAuthorized>
+        </AuthorizeView>
+
+    </BodyTemplate>
+    <FooterTemplate>
+    </FooterTemplate>
+</Modal>
+<Button @onclick="OnShowModalClick">
+    <Icon Name="IconName.Gear" Size="IconSize.x5" />
+</Button>
+
+@code {
+    private Modal modal = default!;
+
+    private async Task OnShowModalClick()
+    {
+        Log.Information("Show modal {@modal}", modal);
+        await modal.ShowAsync();
+    }
+
+    private async Task OnHideModalClick()
+    {
+        await modal.HideAsync();
+    }
+
+}

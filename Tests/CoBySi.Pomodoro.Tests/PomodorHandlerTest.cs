@@ -1,5 +1,6 @@
 using CoBySi.Pomodoro.Timer;
 using Microsoft.Extensions.Time.Testing;
+using NSubstitute;
 
 namespace CoBySi.Pomodoro.Tests;
 
@@ -15,18 +16,17 @@ public class PomodorHandlerTest
             MinutesPerPomodoro = 1
         };
         var pomodoroHandler = new PomodorHandler(timeProvider);
-        var pomodoroState = PomodoroState.Pomodoro;
         var raised = false;
 
         double? totalNumberOfSecondsLeft = 0;
-        pomodoroHandler.ElapsedTimeChanged += (sender, args) =>
+        pomodoroHandler.TimerChangedAsync += async (sender, args) =>
         {
             raised = true;
             totalNumberOfSecondsLeft = args.NumberOfSecondsLeft;
         };
 
-        // Act
-        pomodoroHandler.Start(pomodoroState, TimeSpan.FromMinutes(pomodoroSettings.MinutesPerPomodoro).TotalSeconds);
+        // Act  
+        pomodoroHandler.StartNext(pomodoroSettings);
 
         // Assert
         Assert.True(raised);
@@ -43,12 +43,15 @@ public class PomodorHandlerTest
             MinutesPerPomodoro = 25
         };
         var pomodoroHandler = new PomodorHandler(timeProvider);
-        var pomodoroState = PomodoroState.Pomodoro;
         var raised = false;
-        pomodoroHandler.TimerFinished += (sender, args) => raised = true;
+        pomodoroHandler.TimerChangedAsync += async (sender, args) =>
+        {
+            raised = args.EventType.Equals(Models.TimerEventType.Finished);
+            await Task.CompletedTask;
+        };
 
         // Act
-        pomodoroHandler.Start(pomodoroState, TimeSpan.FromMinutes(pomodoroSettings.MinutesPerPomodoro).TotalSeconds);
+        pomodoroHandler.StartNext(pomodoroSettings);
         timeProvider.Advance(TimeSpan.FromMinutes(pomodoroSettings.MinutesPerPomodoro));
 
         // Assert
@@ -65,19 +68,26 @@ public class PomodorHandlerTest
             MinutesPerPomodoro = 25
         };
         var pomodoroHandler = new PomodorHandler(timeProvider);
-        var pomodoroState = PomodoroState.Pomodoro;
         var raised = false;
         int ticks = 0;
-        pomodoroHandler.TimerFinished += (sender, args) => raised = true;
-        pomodoroHandler.ElapsedTimeChanged += (sender, args) => ticks++;
+        pomodoroHandler.TimerChangedAsync += async (sender, args) =>
+        {
+            raised = args.EventType.Equals(Models.TimerEventType.Finished);
+            await Task.CompletedTask;
+        };
+        pomodoroHandler.TimerChangedAsync += async (sender, args) =>
+        {
+            ticks++;
+            await Task.CompletedTask;
+        };
 
         // Act
-        pomodoroHandler.Start(pomodoroState, TimeSpan.FromMinutes(pomodoroSettings.MinutesPerPomodoro).TotalSeconds);
+        pomodoroHandler.StartNext(pomodoroSettings);
         timeProvider.Advance(TimeSpan.FromMinutes(pomodoroSettings.MinutesPerPomodoro));
 
         // Assert
         Assert.True(raised);
-        Assert.Equal(TimeSpan.FromMinutes(pomodoroSettings.MinutesPerPomodoro).TotalSeconds + 2, ticks);
+        Assert.Equal(TimeSpan.FromMinutes(pomodoroSettings.MinutesPerPomodoro).TotalSeconds + 1, ticks);
 
     }
 
@@ -91,24 +101,23 @@ public class PomodorHandlerTest
             MinutesPerPomodoro = 25
         };
         var pomodoroHandler = new PomodorHandler(timeProvider);
-        var pomodoroState = PomodoroState.Pomodoro;
         int ticks = 0;
-        pomodoroHandler.ElapsedTimeChanged += (sender, args) => ticks++;
+        pomodoroHandler.TimerChangedAsync += async (sender, args) => { ticks++; await Task.CompletedTask; };
+
+
 
         // Act
-        pomodoroHandler.Start(pomodoroState, TimeSpan.FromMinutes(pomodoroSettings.MinutesPerPomodoro).TotalSeconds);
+        pomodoroHandler.StartNext(pomodoroSettings);
         timeProvider.Advance(TimeSpan.FromMinutes(1));
 
-        pomodoroHandler.Stop(TimeSpan.FromMinutes(pomodoroSettings.MinutesPerPomodoro).TotalSeconds);
+        pomodoroHandler.Stop();
 
         timeProvider.Advance(TimeSpan.FromMinutes(3));
 
 
         // Assert
+
         Assert.InRange(ticks, 0, TimeSpan.FromMinutes(pomodoroSettings.MinutesPerPomodoro).TotalSeconds - 10);
     }
 
-
-
 }
-

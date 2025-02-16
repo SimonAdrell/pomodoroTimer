@@ -12,6 +12,7 @@ using CoBySi.Pomodoro.Web.Settings;
 using CoBySi.Pomodoro.Repository.settings;
 using CoBySi.Pomodoro.Web.Services;
 using CoBySi.Pomodoro.Web.Cache;
+using CoBySi.Pomodoro.Repository.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,6 +36,7 @@ builder.Services.AddRazorComponents()
 builder.Services.AddSingleton<IPomodorHandler, PomodorHandler>();
 builder.Services.AddSingleton<IUserSettingsRepository, UserSettingsRepository>();
 builder.Services.AddSingleton<IPomodoroSettingsService, PomodoroSettingsService>();
+builder.Services.AddSingleton<ILocalStorageService, LocalStorageService>();
 
 builder.Services.Configure<PomodoroSettings>(builder.Configuration.GetSection("PomodoroSettings"));
 
@@ -51,6 +53,10 @@ builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityUserAccessor>();
 
 builder.Services.AddScoped<IdentityRedirectManager>();
+
+builder.Services.AddScoped<ILocalStorageService, LocalStorageService>();
+
+builder.Services.AddScoped<INotificationService, NotificaionService>();
 
 builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
 
@@ -74,6 +80,8 @@ builder.Services.AddIdentityCore<PomodoroUser>(options => options.SignIn.Require
     .AddEntityFrameworkStores<PomodoroAuth>()
     .AddSignInManager()
     .AddDefaultTokenProviders();
+
+builder.Services.AddBlazorBootstrap();
 
 builder.Services.AddSingleton<IEmailSender<PomodoroUser>, EmailSender>();
 

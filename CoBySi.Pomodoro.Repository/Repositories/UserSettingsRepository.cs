@@ -1,4 +1,5 @@
 using CoBySi.Pomodoro.Repository.Models;
+using CoBySi.Pomodoro.Repository.Repositories;
 using CoBySi.Pomodoro.Repository.settings;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
@@ -35,5 +36,30 @@ public class UserSettingsRepository : IUserSettingsRepository
             .Set(x => x.MinutesPerLongBreak, entity.MinutesPerLongBreak)
             .Set(x => x.PomodorosBeforeLongBreak, entity.PomodorosBeforeLongBreak),
             new UpdateOptions { IsUpsert = true }, cancellationToken);
+    }
+
+    public async Task SaveNotificationItemAsync(NotificationEntity notificationItem, CancellationToken cancellationToken)
+    {
+        var client = new MongoClient(_mongoSettiings.ConnectionString);
+        var collection = client.GetDatabase(_mongoSettiings.Database)
+            .GetCollection<NotificationEntity>(_mongoSettiings.Collections?.NotificationSettingsCollection);
+        var filter = Builders<NotificationEntity>.Filter.Eq(x => x.UserId, notificationItem.UserId);
+
+        await collection.UpdateOneAsync(filter, new UpdateDefinitionBuilder<NotificationEntity>()
+           .Set(x => x.LastChanged, notificationItem.LastChanged)
+           .Set(x => x.UserId, notificationItem.UserId)
+           .Set(x => x.NotificationEnabled, notificationItem.NotificationEnabled)
+           .Set(x => x.NotificationSoundEnabled, notificationItem.NotificationSoundEnabled)
+           .Set(x => x.SoundID, notificationItem.SoundID),
+           new UpdateOptions { IsUpsert = true }, cancellationToken);
+    }
+
+    public async Task<NotificationEntity?> GetUserNotificationSettingsAsync(string userId, CancellationToken cancellationToken)
+    {
+        var client = new MongoClient(_mongoSettiings.ConnectionString);
+        var collection = client.GetDatabase(_mongoSettiings.Database)
+            .GetCollection<NotificationEntity>(_mongoSettiings.Collections?.NotificationSettingsCollection);
+        var filter = Builders<NotificationEntity>.Filter.Eq(x => x.UserId, userId);
+        return await collection.Find(filter).FirstOrDefaultAsync(cancellationToken);
     }
 }
