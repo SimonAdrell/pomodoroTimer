@@ -42,14 +42,6 @@ builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Emai
 builder.Services.Configure<RedisSettings>(builder.Configuration.GetSection("redis"));
 
 builder.Services.AddSingleton(
-        builder.Configuration.GetSection("NotificationDbSettings").Get<NotificationDbSettings>() ??
-            throw new NullReferenceException());
-
-builder.Services.AddSingleton(
-        builder.Configuration.GetSection("PomodorosDbSettings").Get<PomodorosDbSettings>() ??
-            throw new NullReferenceException());
-
-builder.Services.AddSingleton(
         builder.Configuration.GetSection("SettingsDbSettings").Get<SettingsDbSettings>() ??
             throw new NullReferenceException());
 
