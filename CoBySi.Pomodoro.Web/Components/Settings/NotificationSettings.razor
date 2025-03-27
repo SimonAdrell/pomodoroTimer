@@ -1,9 +1,13 @@
 ﻿@using CoBySi.Pomodoro.Repository
 @using CoBySi.Pomodoro.Repository.Identity.Data
 @using CoBySi.Pomodoro.Repository.Repositories
+@using CoBySi.Pomodoro.Web.Components.Account
+@using CoBySi.Pomodoro.Web.Services
 @using Microsoft.AspNetCore.Identity
 @using Serilog
 @inject IJSRuntime JS
+@inject IdentityUserAccessor UserAccessor
+@inject SettingsService settingsService
 @inject UserManager<PomodoroUser> userManager;
 
 <h3 class="mt-3 mb-3">Notification settings</h3>
@@ -11,12 +15,12 @@
     <DataAnnotationsValidator />
     <ValidationSummary class="text-danger" role="alert" />
     <div class="mb-3">
-        <Switch @bind-Value="Input.NotificaionsEnabled" aria-required="true" Label="Notify when timer is completed" />
-        <ValidationMessage For="() => Input.NotificaionsEnabled" class="text-danger" />
+        <Switch @bind-Value="Input.NotificationsEnabled" aria-required="true" Label="Notify when timer is completed" />
+        <ValidationMessage For="() => Input.NotificationsEnabled" class="text-danger" />
     </div>
     <div class="mb-3">
         <Switch @bind-Value="Input.PlaySound" aria-required="true" Label="Play sound when timer is complete" />
-        <ValidationMessage For="() => Input.NotificaionsEnabled" class="text-danger" />
+        <ValidationMessage For="() => Input.PlaySound" class="text-danger" />
     </div>
     <div class="mb-3">
         <Button Color="ButtonColor.Secondary" @onclick="TestNotification">
@@ -33,16 +37,12 @@
     private EditContext? editContext;
     [SupplyParameterFromForm]
     private InputModel Input { get; set; } = new();
-    private readonly IUserSettingsRepository _userSettingsRepository;
     private CancellationTokenSource _cts = new();
     [CascadingParameter]
     private Task<AuthenticationState> stateAuthenticate { get; set; }
     private string message = string.Empty;
-
-    public NotificationSettings(IUserSettingsRepository userSettingsRepository)
-    {
-        _userSettingsRepository = userSettingsRepository;
-    }
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
 
     protected override async Task OnInitializedAsync()
     {
@@ -78,15 +78,17 @@
             var authstate = await stateAuthenticate;
             if (authstate != null && authstate.User?.Identity != null && authstate.User.Identity.IsAuthenticated)
             {
-                var user = await userManager.GetUserAsync(authstate.User);
+                @* var user = await userManager.GetUserAsync(authstate.User); *@
+                var user = await UserAccessor.GetRequiredUserAsync(HttpContext);
+
+                userId = await userManager.GetUserIdAsync(user);
                 if (user != null)
                     userId = user.Id;
             }
-            Log.Information("Input model: {@im}", Input);
-            await _userSettingsRepository.SaveNotificationItemAsync(new Repository.Models.NotificationEntity()
+            await settingsService.SaveNotificationSettingsAsync(userId, new Repository.Models.NotificationEntity()
             {
                 UserId = userId,
-                NotificationEnabled = Input.NotificaionsEnabled,
+                NotificationEnabled = Input.NotificationsEnabled,
                 NotificationSoundEnabled = Input.PlaySound,
                 Created = DateTime.UtcNow,
                 LastChanged = DateTime.UtcNow,
@@ -106,19 +108,20 @@
             if (user != null)
                 userId = user.Id;
         }
-        var settings = await _userSettingsRepository.GetUserNotificationSettingsAsync(userId, _cts.Token);
+        var settings = await settingsService.GetNotificationSettingsAsync(userId, _cts.Token);
         if (settings is null)
             return new InputModel();
+
         return new InputModel()
         {
-            NotificaionsEnabled = settings.NotificationEnabled,
+            NotificationsEnabled = settings.NotificationEnabled,
             PlaySound = settings.NotificationSoundEnabled,
             SoundID = settings.SoundID
         };
     }
     private sealed class InputModel
     {
-        public bool NotificaionsEnabled { get; set; } = true;
+        public bool NotificationsEnabled { get; set; } = true;
         public bool PlaySound { get; set; } = true;
         public int SoundID { get; set; }
 

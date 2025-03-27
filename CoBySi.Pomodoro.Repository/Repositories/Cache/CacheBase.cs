@@ -1,9 +1,10 @@
-using CoBySi.Pomodoro.Web.Settings;
+using CoBySi.Pomodoro.Repository.settings;
+using CoBySi.Pomodoro.Web.Cache;
 using Microsoft.Extensions.Caching.Distributed;
 
-namespace CoBySi.Pomodoro.Web.Cache;
+namespace CoBySi.Pomodoro.Repository.Repositories.Cache;
 
-public abstract class CacheBase : ICacheBase
+public abstract class CacheBase<T> : ICacheBase<T>
 {
     private readonly IDistributedCache _distributedCache;
     private readonly CacheSetting _cacheSetting;
@@ -15,20 +16,20 @@ public abstract class CacheBase : ICacheBase
         _cacheSetting = cacheSetting;
     }
 
-    private string GetKey<T>(string key)
+    private string GetKey(string key)
     {
         return $"{_cacheSetting.Namespace}:{typeof(T).Name}:{key}";
     }
 
-    public async Task<T?> GetAsync<T>(string key, CancellationToken cancellationToken)
+    public async Task<T?> GetAsync(string key, CancellationToken cancellationToken)
     {
-        var value = await _distributedCache.GetStringAsync(GetKey<T>(key), cancellationToken);
+        var value = await _distributedCache.GetStringAsync(GetKey(key), cancellationToken);
         return value == null ? default : System.Text.Json.JsonSerializer.Deserialize<T>(value);
     }
-    public async Task SetAsync<T>(string key, T value, CancellationToken cancellationToken)
+    public async Task SetAsync(string key, T value, CancellationToken cancellationToken)
     {
         var options = new DistributedCacheEntryOptions();
         options.SetSlidingExpiration(TimeSpan.FromMinutes(_cacheSetting.SlidingExpirationMinutes));
-        await _distributedCache.SetStringAsync(GetKey<T>(key), System.Text.Json.JsonSerializer.Serialize(value), options, cancellationToken);
+        await _distributedCache.SetStringAsync(GetKey(key), System.Text.Json.JsonSerializer.Serialize(value), options, cancellationToken);
     }
 }

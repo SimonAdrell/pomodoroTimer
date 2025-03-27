@@ -3,25 +3,20 @@ using CoBySi.Pomodoro.Repository;
 using CoBySi.Pomodoro.Web.Components;
 using Serilog;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using CoBySi.Pomodoro.Repository.Identity.Data;
 using CoBySi.Pomodoro.Web.Components.Account;
 using Microsoft.AspNetCore.Components.Authorization;
 using CoBySi.Pomodoro.Web.EmailService;
 using CoBySi.Pomodoro.Web.Settings;
-using CoBySi.Pomodoro.Repository.settings;
 using CoBySi.Pomodoro.Web.Services;
 using CoBySi.Pomodoro.Web.Cache;
 using CoBySi.Pomodoro.Repository.Repositories;
+using AspNetCore.Identity.CosmosDb.Extensions;
+using CoBySi.Pomodoro.Repository.settings;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var connectionString = builder.Configuration.GetConnectionString("postgress")
-    ?? throw new InvalidOperationException("Connection string 'postgress' not found."); ;
 
-builder.Services.AddDbContext<PomodoroAuth>(options => options.UseNpgsql(connectionString));
-
-// builder.Services.AddDefaultIdentity<PomodoroUser>(options => options.SignIn.RequireConfirmedAccount = true).AddEntityFrameworkStores<PomodoroAuth>();
 Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Debug()
             .WriteTo.Console()
@@ -29,20 +24,35 @@ Log.Logger = new LoggerConfiguration()
 
 Log.Information("Starting {application}", "CoBySi.Pomodoro.Web");
 
-// Add services to the container.
+await builder.AddCosmosDb();
+
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 builder.Services.AddSingleton<IPomodorHandler, PomodorHandler>();
-builder.Services.AddSingleton<IUserSettingsRepository, UserSettingsRepository>();
-builder.Services.AddSingleton<IPomodoroSettingsService, PomodoroSettingsService>();
+
+builder.Services.AddSingleton<ISettingsRepository, SettingsRepository>();
+builder.Services.Decorate<ISettingsRepository, CacheSettingsRepository>();
+
+builder.Services.AddSingleton<ISettingsService, SettingsService>();
 builder.Services.AddSingleton<ILocalStorageService, LocalStorageService>();
 
 builder.Services.Configure<PomodoroSettings>(builder.Configuration.GetSection("PomodoroSettings"));
-
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
-builder.Services.Configure<MongoSettiings>(builder.Configuration.GetSection("mongodb"));
 builder.Services.Configure<RedisSettings>(builder.Configuration.GetSection("redis"));
+
+builder.Services.AddSingleton(
+        builder.Configuration.GetSection("NotificationDbSettings").Get<NotificationDbSettings>() ??
+            throw new NullReferenceException());
+
+builder.Services.AddSingleton(
+        builder.Configuration.GetSection("PomodorosDbSettings").Get<PomodorosDbSettings>() ??
+            throw new NullReferenceException());
+
+builder.Services.AddSingleton(
+        builder.Configuration.GetSection("SettingsDbSettings").Get<SettingsDbSettings>() ??
+            throw new NullReferenceException());
+
 
 builder.Services.AddSingleton<ISettingsCache, SettingsCache>();
 
@@ -56,7 +66,7 @@ builder.Services.AddScoped<IdentityRedirectManager>();
 
 builder.Services.AddScoped<ILocalStorageService, LocalStorageService>();
 
-builder.Services.AddScoped<INotificationService, NotificaionService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 
 builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
 
@@ -69,14 +79,11 @@ builder.Services.AddStackExchangeRedisCache(options =>
      options.InstanceName = redisSettings?.InstanceName;
  });
 
-builder.Services.AddAuthentication(options =>
-    {
-        options.DefaultScheme = IdentityConstants.ApplicationScheme;
-        options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
-    })
-    .AddIdentityCookies();
 
-builder.Services.AddIdentityCore<PomodoroUser>(options => options.SignIn.RequireConfirmedAccount = true)
+builder.Services.AddCosmosIdentity<PomodoroAuth, PomodoroUser, IdentityRole, string>(
+      options => options.SignIn.RequireConfirmedAccount = true
+    )
+    .AddDefaultUI() // Use this if Identity Scaffolding is in use
     .AddEntityFrameworkStores<PomodoroAuth>()
     .AddSignInManager()
     .AddDefaultTokenProviders();

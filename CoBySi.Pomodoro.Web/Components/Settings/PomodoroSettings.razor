@@ -7,7 +7,7 @@
 @using Microsoft.AspNetCore.Identity
 
 @inject UserManager<PomodoroUser> userManager;
-@inject IPomodoroSettingsService PomodoroSettingsService;
+@inject ISettingsService SettingsService;
 @inject ILocalStorageService _localStorage;
 
 <PageTitle>Manage pomodoro settings</PageTitle>
@@ -89,7 +89,7 @@
                     userId = user.Id;
             }
 
-            await PomodoroSettingsService.SavePomodoroSettingsAsync(userId, sessionId, new
+            await SettingsService.SavePomodoroSettingsAsync(userId, new
             Pomodoro.PomodoroSettings()
             {
                 MinutesPerLongBreak = Input.LongBreakDuration,
@@ -112,7 +112,7 @@
                 userId = user.Id;
         }
 
-        var settings = await PomodoroSettingsService.GetUserPomodoroSettingsAsync(userId, sessionId, _cts.Token);
+        var settings = await SettingsService.GetUserPomodoroSettingsAsync(userId, _cts.Token);
         return new InputModel
         {
             PomodoroDuration = settings.MinutesPerPomodoro,

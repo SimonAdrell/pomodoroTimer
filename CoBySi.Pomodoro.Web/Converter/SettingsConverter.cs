@@ -5,11 +5,11 @@ namespace CoBySi.Pomodoro.Web.Converter;
 internal static class SettingsConverter
 {
     /// <summary>
-    /// Converts a <see cref="UserPomodoroSettingsEntity"/> to a <see cref="PomodoroSettings"/>.
+    /// Converts a <see cref="PomodoroSettingsEntity"/> to a <see cref="PomodoroSettings"/>.
     /// </summary>
-    /// <param name="source">The <see cref="UserPomodoroSettingsEntity"/> to convert.</param>
+    /// <param name="source">The <see cref="PomodoroSettingsEntity"/> to convert.</param>
     /// <returns>A <see cref="PomodoroSettings"/> object with the converted settings.</returns>
-    internal static PomodoroSettings? ConvertToPomodoroSettings(this UserPomodoroSettingsEntity? source)
+    internal static PomodoroSettings? ConvertToPomodoroSettings(this PomodoroSettingsEntity? source)
     {
         if (source == null)
             return null;
@@ -23,11 +23,10 @@ internal static class SettingsConverter
         };
     }
 
-    internal static UserPomodoroSettingsEntity ConvertToUserPomodoroSettingsEntity(this PomodoroSettings source, string userId)
+    internal static PomodoroSettingsEntity ConvertToUserPomodoroSettingsEntity(this PomodoroSettings source)
     {
-        return new UserPomodoroSettingsEntity()
+        return new PomodoroSettingsEntity()
         {
-            UserID = userId,
             MinutesPerLongBreak = source.MinutesPerLongBreak,
             MinutesPerShortBreak = source.MinutesPerShortBreak,
             MinutesPerPomodoro = source.MinutesPerPomodoro,

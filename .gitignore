@@ -404,5 +404,4 @@ mongo-data/
 postgres-data/
 redis-data/
 
-*/Icov.info
-Tests/CoBySi.PomodorTimer.Web.Tests/lcov.info
+*lcov.info

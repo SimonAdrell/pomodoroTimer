@@ -49,7 +49,6 @@ public class PomodorHandler : IPomodorHandler
         _totalNumberOfSeconds = _currentItem.TotalNumberOfSeconds;
         _pomodoroTimer = _timeProvider.CreateTimer(TimerCallback, _currentItem, TimeSpan.Zero, TimeSpan.FromSeconds(1));
 
-        Log.Information("Started {id} {State}", _currentItem.Id, _currentItem.Status);
     }
     private async void TimerCallback(object? state)
     {

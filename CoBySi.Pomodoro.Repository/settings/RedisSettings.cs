@@ -1,4 +1,4 @@
-namespace CoBySi.Pomodoro.Web.Settings;
+namespace CoBySi.Pomodoro.Repository.settings;
 
 public class RedisSettings
 {

@@ -35,10 +35,5 @@
 @code {
     private Modal modal = default!;
 
-    private async Task OnShowModalClick()
-    {
-        Log.Information("Show modal {@modal}", modal);
-        await modal.ShowAsync();
-    }
-
+    private async Task OnShowModalClick() => await modal.ShowAsync();
 }

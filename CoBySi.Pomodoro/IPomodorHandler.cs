@@ -1,4 +1,3 @@
-using CoBySi.Pomodoro.Models;
 using CoBySi.Pomodoro.Timer;
 
 namespace CoBySi.Pomodoro;

@@ -25,7 +25,6 @@ public class EmailSender : IEmailSender<PomodoroUser>
         ArgumentException.ThrowIfNullOrEmpty(_emailSettings.ConfirmationTemplateId, nameof(_emailSettings.ConfirmationTemplateId));
 
         await SendEmailAsync(email, user.UserName, _emailSettings.ConfirmationTemplateId, "Confirm your email!", new { link = confirmationLink });
-
         Log.Information("Confirmation email sent");
     }
 

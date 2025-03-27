@@ -1,5 +1,4 @@
 using CoBySi.Pomodoro;
-using CoBySi.Pomodoro.Repository;
 using CoBySi.Pomodoro.Repository.Models;
 using CoBySi.Pomodoro.Repository.Repositories;
 using CoBySi.Pomodoro.Web.Cache;
@@ -27,16 +26,15 @@ public class PomodoroSettingsServiceTest
         var pomodoroSettings = Substitute.For<IOptions<PomodoroSettings>>();
         pomodoroSettings.Value.Returns(defaultPomodoroSettings);
 
-        var userSettingsRepository = Substitute.For<IUserSettingsRepository>();
+        var userSettingsRepository = Substitute.For<ISettingsRepository>();
 
         var settingsCache = Substitute.For<ISettingsCache>();
 
-        var sut = new PomodoroSettingsService(pomodoroSettings, userSettingsRepository, settingsCache);
+        var sut = new SettingsService(pomodoroSettings, userSettingsRepository, settingsCache);
         string userId = string.Empty;
-        string sessionId = string.Empty;
-        // Act
 
-        var result = await sut.GetUserPomodoroSettingsAsync(userId, sessionId, CancellationToken.None);
+        // Act
+        var result = await sut.GetUserPomodoroSettingsAsync(userId, CancellationToken.None);
 
         // Assert
         Assert.Equal(defaultPomodoroSettings, result);
@@ -55,18 +53,19 @@ public class PomodoroSettingsServiceTest
             PomodorosBeforeLongBreak = 4
         };
 
+
+
         var pomodoroSettings = Substitute.For<IOptions<PomodoroSettings>>();
         pomodoroSettings.Value.Returns(defaultPomodoroSettings);
 
-        var userSettingsRepository = Substitute.For<IUserSettingsRepository>();
-        userSettingsRepository.GetUserPomodoroSettingsAsync(userId, Arg.Any<CancellationToken>()).Returns((UserPomodoroSettingsEntity?)null);
+        var userSettingsRepository = Substitute.For<ISettingsRepository>();
+        userSettingsRepository.GetUserSettingsByUserId(userId, Arg.Any<CancellationToken>()).Returns((UserSettings?)null);
 
         var settingsCache = Substitute.For<ISettingsCache>();
-        var sut = new PomodoroSettingsService(pomodoroSettings, userSettingsRepository, settingsCache);
+        var sut = new SettingsService(pomodoroSettings, userSettingsRepository, settingsCache);
 
-        var sessionId = string.Empty;
         // Act
-        var result = await sut.GetUserPomodoroSettingsAsync(userId, sessionId, CancellationToken.None);
+        var result = await sut.GetUserPomodoroSettingsAsync(userId, CancellationToken.None);
 
         // Assert
         Assert.Equal(defaultPomodoroSettings, result);
@@ -85,27 +84,31 @@ public class PomodoroSettingsServiceTest
             PomodorosBeforeLongBreak = 4
         };
 
-        var userPomodoroSettingsEntity = new UserPomodoroSettingsEntity()
+        var userPomodoroSettingsEntity = new PomodoroSettingsEntity()
         {
-            UserID = userId,
             MinutesPerLongBreak = 20,
             MinutesPerShortBreak = 10,
             MinutesPerPomodoro = 30,
             PomodorosBeforeLongBreak = 5
         };
 
+        var userSettings = new UserSettings(userId)
+        {
+            NotificationEntity = null,
+            PommodoroSettings = userPomodoroSettingsEntity
+        };
+
         var pomodoroSettings = Substitute.For<IOptions<PomodoroSettings>>();
         pomodoroSettings.Value.Returns(defaultPomodoroSettings);
 
-        var userSettingsRepository = Substitute.For<IUserSettingsRepository>();
-        userSettingsRepository.GetUserPomodoroSettingsAsync(userId, Arg.Any<CancellationToken>()).Returns(userPomodoroSettingsEntity);
+        var userSettingsRepository = Substitute.For<ISettingsRepository>();
+        userSettingsRepository.GetUserSettingsByUserId(userId, Arg.Any<CancellationToken>()).Returns(userSettings);
 
         var settingsCache = Substitute.For<ISettingsCache>();
-        var sut = new PomodoroSettingsService(pomodoroSettings, userSettingsRepository, settingsCache);
+        var sut = new SettingsService(pomodoroSettings, userSettingsRepository, settingsCache);
 
-        var sessionId = string.Empty;
         // Act
-        var result = await sut.GetUserPomodoroSettingsAsync(userId, sessionId, CancellationToken.None);
+        var result = await sut.GetUserPomodoroSettingsAsync(userId, CancellationToken.None);
 
         // Assert
         Assert.Equal(userPomodoroSettingsEntity.MinutesPerLongBreak, result.MinutesPerLongBreak);

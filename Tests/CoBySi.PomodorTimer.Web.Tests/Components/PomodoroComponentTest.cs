@@ -1,5 +1,3 @@
-using System;
-using System.Threading.Tasks;
 using Bunit;
 using Bunit.TestDoubles;
 using CoBySi.Pomodoro;
@@ -10,11 +8,8 @@ using CoBySi.Pomodoro.Timer;
 using CoBySi.Pomodoro.Web.Components;
 using CoBySi.Pomodoro.Web.Services;
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.JSInterop;
 using NSubstitute;
 
 namespace CoBySi.PomodorTimer.Web.Tests.Components;
@@ -25,15 +20,15 @@ public class PomodoroComponentTest
     public async Task FinishedTimer_SendsNotifcations()
     {
         // Arrange
-        var pomodoroSetingsService = Substitute.For<IPomodoroSettingsService>();
-        var userSettingsRepository = Substitute.For<IUserSettingsRepository>();
+        var pomodoroSetingsService = Substitute.For<ISettingsService>();
+        var userSettingsRepository = Substitute.For<ISettingsRepository>();
         var notificationService = Substitute.For<INotificationService>();
 
         var pomodorHandler = Substitute.For<IPomodorHandler>();
         var localStorageService = Substitute.For<ILocalStorageService>();
 
         var userStore = Substitute.For<IUserStore<PomodoroUser>>();
-        userStore.GetUserIdAsync(Arg.Any<PomodoroUser>(), Arg.Any<System.Threading.CancellationToken>()).Returns("1");
+        userStore.GetUserIdAsync(Arg.Any<PomodoroUser>(), Arg.Any<CancellationToken>()).Returns("1");
 
         var UserManager = Substitute.For<UserManager<PomodoroUser>>(userStore, null, null, null, null, null, null, null, null);
 
@@ -41,7 +36,7 @@ public class PomodoroComponentTest
         ctx.AddTestAuthorization();
 
         pomodoroSetingsService
-            .GetUserPomodoroSettingsAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .GetUserPomodoroSettingsAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(new PomodoroSettings() { MinutesPerPomodoro = 25, MinutesPerShortBreak = 5, MinutesPerLongBreak = 15, PomodorosBeforeLongBreak = 4 });
 
         ctx.Services.AddSingleton(pomodoroSetingsService);
@@ -66,7 +61,7 @@ public class PomodoroComponentTest
 
         // Assert
         await notificationService.Received(1)
-            .InvokeNotificaionShow(Arg.Is<string>(s => s.Equals("Pomodoro Complete!")), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>());
+            .InvokeNotificationShow(Arg.Is<string>(s => s.Equals("Pomodoro Complete!")), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>());
 
         await notificationService.Received(1)
             .InvokeNotificationPermissionAsync();
@@ -83,8 +78,8 @@ public class PomodoroComponentTest
     public async Task NotifyTimerCompletion_PomodoroStatus_CorrectTitle(PomodoroStatus pomodoroStatus, string expectedTitle)
     {
         // Arrange
-        var pomodoroSettingsService = Substitute.For<IPomodoroSettingsService>();
-        var userSettingsRepository = Substitute.For<IUserSettingsRepository>();
+        var pomodoroSettingsService = Substitute.For<ISettingsService>();
+        var userSettingsRepository = Substitute.For<ISettingsRepository>();
         var notificationService = Substitute.For<INotificationService>();
 
         var pomodoroComponent = new PomodoroComponent(pomodoroSettingsService, userSettingsRepository, notificationService);
@@ -95,7 +90,7 @@ public class PomodoroComponentTest
 
         // Assert
         await notificationService.Received(1)
-            .InvokeNotificaionShow(Arg.Is<string>(s => s.Equals(expectedTitle)), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>());
+            .InvokeNotificationShow(Arg.Is<string>(s => s.Equals(expectedTitle)), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>());
     }
 
     [Theory]
@@ -105,8 +100,8 @@ public class PomodoroComponentTest
     public async Task NotifyTimerCompletion_PomodoroStatus_CorrectBody(PomodoroStatus pomodoroStatus, string expectedTitle)
     {
         // Arrange
-        var pomodoroSettingsService = Substitute.For<IPomodoroSettingsService>();
-        var userSettingsRepository = Substitute.For<IUserSettingsRepository>();
+        var pomodoroSettingsService = Substitute.For<ISettingsService>();
+        var userSettingsRepository = Substitute.For<ISettingsRepository>();
         var notificationService = Substitute.For<INotificationService>();
 
         var pomodoroComponent = new PomodoroComponent(pomodoroSettingsService, userSettingsRepository, notificationService);
@@ -117,6 +112,6 @@ public class PomodoroComponentTest
 
         // Assert
         await notificationService.Received(1)
-            .InvokeNotificaionShow(Arg.Any<string>(), Arg.Is<string>(s => s.Equals(expectedTitle)), Arg.Any<string>(), Arg.Any<string>());
+            .InvokeNotificationShow(Arg.Any<string>(), Arg.Is<string>(s => s.Equals(expectedTitle)), Arg.Any<string>(), Arg.Any<string>());
     }
 }
