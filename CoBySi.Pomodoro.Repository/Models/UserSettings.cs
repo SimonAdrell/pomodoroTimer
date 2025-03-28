@@ -6,7 +6,7 @@ public record UserSettings(string UserId) : UserBaseEntity(UserId)
 {
     [JsonProperty("id")]
     public string id { get; set; } = UserId;
-    public required PomodoroSettingsEntity? PommodoroSettings { get; set; }
+    public required PomodoroSettingsEntity? PomodoroSettings { get; set; }
     public required NotificationEntity? NotificationEntity { get; set; }
 
 }
