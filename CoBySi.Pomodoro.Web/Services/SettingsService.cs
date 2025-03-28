@@ -75,4 +75,10 @@ public class SettingsService : ISettingsService
         var userSettings = await _settingsRepository.GetUserSettingsByUserId(userId, cancellationToken);
         return userSettings?.NotificationEntity;
     }
+
+    public async Task<UserSettings?> GetUserSettingsAsync(string userId, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(userId);
+        return await _settingsRepository.GetUserSettingsByUserId(userId, cancellationToken);
+    }
 }

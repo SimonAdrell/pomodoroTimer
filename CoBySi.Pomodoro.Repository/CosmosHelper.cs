@@ -8,8 +8,7 @@ public class CosmosHelper
     public static async Task<Container> CreateIfNotExist(CosmosBaseSettings settings)
     {
         var client = new CosmosClient(
-                    accountEndpoint: settings.ConnectionString,
-                    tokenCredential: new DefaultAzureCredential()
+            connectionString: settings.ConnectionString
         );
         await client.CreateDatabaseIfNotExistsAsync(settings.DatatabaseName);
         var database = client.GetDatabase(settings.DatatabaseName);
