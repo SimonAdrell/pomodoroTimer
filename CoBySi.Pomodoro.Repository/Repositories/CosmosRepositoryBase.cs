@@ -25,7 +25,7 @@ public abstract class CosmosRepositoryBase<TEntity>
     public async Task<TEntity?> GetFirstOrDefaultByUserId(string userId, CancellationToken cancellationToken)
     {
         var container = await CosmosHelper.CreateIfNotExist(_settings);
-        var query = new QueryDefinition($"SELECT * FROM c WHERE c.UserId = @userId")
+        var query = new QueryDefinition($"SELECT * FROM c WHERE c.userId = @userId")
             .WithParameter("@userId", userId);
         var iterator = container.GetItemQueryIterator<TEntity>(query);
         var notification = await iterator.ReadNextAsync(cancellationToken);

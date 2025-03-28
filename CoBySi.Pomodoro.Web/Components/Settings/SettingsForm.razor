@@ -4,11 +4,13 @@
 @using CoBySi.Pomodoro.Web.Components.Account
 @using CoBySi.Pomodoro.Web.Services
 @using Microsoft.AspNetCore.Identity
+@using Microsoft.Extensions.Options
 @using Serilog
 @inject IJSRuntime JS
 @inject IdentityUserAccessor UserAccessor
 @inject ISettingsService settingsService
 @inject UserManager<PomodoroUser> userManager;
+@inject IOptions<PomodoroSettings> pomodoroSettings;
 
 
 <EditForm FormName="edit-pomodorosettings" EditContext="editContext" OnValidSubmit="OnValidSubmitAsync">
@@ -39,15 +41,15 @@
         <label for="nPomodoroDuration" class="form-label">Number of pomodoros before long break</label>
         <ValidationMessage For="() => Input.LongBreakInterval" class="text-danger" />
     </div>
-    <div class="mb-3">
+    <div class="form-floating mb-3">
         <Switch @bind-Value="Input.NotificationsEnabled" aria-required="true" Label="Notify when timer is completed" />
         <ValidationMessage For="() => Input.NotificationsEnabled" class="text-danger" />
     </div>
-    <div class="mb-3">
+    <div class="form-floating mb-3">
         <Switch @bind-Value="Input.PlaySound" aria-required="true" Label="Play sound when timer is complete" />
         <ValidationMessage For="() => Input.PlaySound" class="text-danger" />
     </div>
-    <div class="mb-3">
+    <div class="form-floating mb-3">
         <Button Color="ButtonColor.Secondary" @onclick="TestNotification">
             Test Notification
         </Button>
@@ -104,19 +106,32 @@
             if (authstate != null && authstate.User?.Identity != null && authstate.User.Identity.IsAuthenticated)
             {
                 var user = await userManager.GetUserAsync(authstate.User);
-                userId = user.Id;
+                if (user != null)
+                    userId = user.Id;
             }
-            await settingsService.SaveNotificationSettingsAsync(userId, new Repository.Models.NotificationEntity()
+
+            await settingsService.SaveSettings(userId, new Repository.Models.UserSettings(userId)
             {
-                UserId = userId,
-                NotificationEnabled = Input.NotificationsEnabled,
-                NotificationSoundEnabled = Input.PlaySound,
-                Created = DateTime.UtcNow,
-                LastChanged = DateTime.UtcNow,
-                SoundID = Input.SoundID
+                NotificationEntity = new Repository.Models.NotificationEntity()
+                {
+                    Created = DateTime.UtcNow,
+                    LastChanged = DateTime.UtcNow,
+                    NotificationEnabled = Input.NotificationsEnabled,
+                    NotificationSoundEnabled = Input.NotificationsEnabled,
+                    SoundID = Input.SoundID
+                },
+                PommodoroSettings = new Repository.Models.PomodoroSettingsEntity()
+                {
+                    MinutesPerPomodoro = Input.PomodoroDuration,
+                    MinutesPerShortBreak = Input.ShortBreakDuration,
+                    MinutesPerLongBreak = Input.LongBreakDuration,
+                    PomodorosBeforeLongBreak = Input.LongBreakInterval
+                }
             }, _cts.Token);
-            message = "Notification settings saved";
         }
+
+        message = "Notification settings saved";
+
     }
 
     private async Task<InputModel> GetInputModel()
@@ -131,7 +146,15 @@
         }
         var settings = await settingsService.GetUserSettingsAsync(userId, _cts.Token);
         if (settings is null)
-            return new InputModel();
+        {
+            var defaultInputModel = new InputModel();
+            var defaultPomodoroSettings = pomodoroSettings.Value;
+            defaultInputModel.PomodoroDuration = defaultPomodoroSettings.MinutesPerPomodoro;
+            defaultInputModel.ShortBreakDuration = defaultPomodoroSettings.MinutesPerShortBreak;
+            defaultInputModel.LongBreakDuration = defaultPomodoroSettings.MinutesPerLongBreak;
+            defaultInputModel.LongBreakInterval = defaultPomodoroSettings.PomodorosBeforeLongBreak;
+            return defaultInputModel;
+        }
 
         var inputModel = new InputModel();
 
@@ -141,13 +164,23 @@
             inputModel.PlaySound = settings.NotificationEntity.NotificationSoundEnabled;
             inputModel.SoundID = settings.NotificationEntity.SoundID;
         }
-
+        if (settings.PommodoroSettings is null)
+        {
+            var defaultPomodoroSettings = pomodoroSettings.Value;
+            settings.PommodoroSettings = new Repository.Models.PomodoroSettingsEntity()
+            {
+                MinutesPerPomodoro = defaultPomodoroSettings.MinutesPerPomodoro,
+                MinutesPerShortBreak = defaultPomodoroSettings.MinutesPerShortBreak,
+                MinutesPerLongBreak = defaultPomodoroSettings.MinutesPerLongBreak,
+                PomodorosBeforeLongBreak = defaultPomodoroSettings.PomodorosBeforeLongBreak,
+            };
+        }
         if (settings.PommodoroSettings is not null)
         {
             inputModel.PomodoroDuration = settings.PommodoroSettings.MinutesPerPomodoro;
             inputModel.ShortBreakDuration = settings.PommodoroSettings.MinutesPerShortBreak;
             inputModel.LongBreakDuration = settings.PommodoroSettings.MinutesPerLongBreak;
-            inputModel.LongBreakInterval = settings.PommodoroSettings.MinutesPerShortBreak;
+            inputModel.LongBreakInterval = settings.PommodoroSettings.PomodorosBeforeLongBreak;
         }
 
         return inputModel;
