@@ -1,11 +1,10 @@
 ﻿@using Serilog
 <Modal @ref="modal" title="Settings" IsVerticallyCentered="true" CloseOnEscape="true">
     <BodyTemplate>
-        <PomodoroSettings></PomodoroSettings>
         <hr class="" />
         <AuthorizeView>
             <Authorized>
-                <NotificationSettings></NotificationSettings>
+                <SettingsForm></SettingsForm>
             </Authorized>
             <NotAuthorized>
                 <div class="px-3">
@@ -24,16 +23,6 @@
 
 @code {
     private Modal modal = default!;
-
-    private async Task OnShowModalClick()
-    {
-        Log.Information("Show modal {@modal}", modal);
-        await modal.ShowAsync();
-    }
-
-    private async Task OnHideModalClick()
-    {
-        await modal.HideAsync();
-    }
-
+    private async Task OnShowModalClick() => await modal.ShowAsync();
+    private async Task OnHideModalClick() => await modal.HideAsync();
 }

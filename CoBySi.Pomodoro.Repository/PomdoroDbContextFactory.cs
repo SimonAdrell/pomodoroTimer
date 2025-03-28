@@ -13,7 +13,16 @@ public class PomdoroDbContextFactory : IDesignTimeDbContextFactory<PomodoroAuth>
     public PomodoroAuth CreateDbContext(string[] args)
     {
         var optionsBuilder = new DbContextOptionsBuilder<PomodoroAuth>();
-        optionsBuilder.UseNpgsql("User ID=postgres;Password=YourStrong!Passw0rd;Host=localhost;Port=5432;Database=pomodoro;Pooling=true;MinPoolSize=0;MaxPoolSize=100;Connection Lifetime=0;");
+        optionsBuilder
+            .UseCosmos(
+                connectionString: "AccountEndpoint=https://localhost:8081/;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==",
+                databaseName: "ApplicationDB",
+                cosmosOptionsAction: options =>
+                {
+                    options.ConnectionMode(Microsoft.Azure.Cosmos.ConnectionMode.Direct);
+                    options.MaxRequestsPerTcpConnection(16);
+                    options.MaxTcpConnectionsPerEndpoint(32);
+                });
 
         return new PomodoroAuth(optionsBuilder.Options);
     }

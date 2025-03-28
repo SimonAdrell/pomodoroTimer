@@ -8,7 +8,6 @@
 @using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
 @using Microsoft.AspNetCore.Identity
 @using Serilog
-
 @rendermode InteractiveServer
 
 @inject IPomodorHandler _pomodoroHandler
@@ -53,15 +52,15 @@
 
     [CascadingParameter]
     private Task<AuthenticationState> stateAuthenticate { get; set; }
-    private readonly IPomodoroSettingsService _pomodoroSettingsService;
+    private readonly ISettingsService _settingsService;
     private CancellationTokenSource _cts = new();
-    private readonly IUserSettingsRepository _userSettingsRepository;
+    private readonly ISettingsRepository _settingRepository;
     private readonly INotificationService _notificationService;
-    public PomodoroComponent(IPomodoroSettingsService pomodoroSettingsService, IUserSettingsRepository
-    userSettingsRepository, INotificationService notificationService)
+    public PomodoroComponent(ISettingsService settingsService, ISettingsRepository
+    settingsRepository, INotificationService notificationService)
     {
-        _pomodoroSettingsService = pomodoroSettingsService;
-        _userSettingsRepository = userSettingsRepository;
+        _settingsService = settingsService;
+        _settingRepository = settingsRepository;
         _notificationService = notificationService;
     }
 
@@ -77,8 +76,7 @@
                 userid = user.Id;
         }
 
-        return await _pomodoroSettingsService.GetUserPomodoroSettingsAsync(userid,
-        await _localStorage.GetOrCreateSessionIdAsync(), _cts.Token);
+        return await _settingsService.GetUserPomodoroSettingsAsync(userid, _cts.Token);
     }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -86,8 +84,8 @@
         {
             await _notificationService.InvokeNotificationPermissionAsync();
 
-            if (_pomodoroSettingsService == null)
-                throw new ArgumentNullException(nameof(_pomodoroSettingsService));
+            if (_settingsService == null)
+                throw new ArgumentNullException(nameof(_settingsService));
 
             var pomodoroSettings = await GetSettings();
             currentMinutesSeconds =
@@ -133,7 +131,6 @@
 
     private async Task PomodorHandler_TimerChanged(object? sender, TimerChangedEventArgs e)
     {
-        Log.Information("TimerChangedEventArgs {@pomocdoroItem}", e);
         if (e.Item is null)
             return;
 
@@ -167,21 +164,19 @@
             return;
         }
 
-        var NotificationSettings = await _userSettingsRepository.GetUserNotificationSettingsAsync(userId, _cts.Token);
-        if (NotificationSettings is null)
+        var NotificationSettings = await _settingRepository.GetUserSettingsByUserId(userId, _cts.Token);
+        if (NotificationSettings is null || NotificationSettings.NotificationEntity is null)
         {
             await PlayCompletionSound();
             await NotifyTimerCompletion(pomodoroItem);
             return;
         }
-        if (NotificationSettings.NotificationSoundEnabled)
+
+        if (NotificationSettings.NotificationEntity.NotificationSoundEnabled)
             await PlayCompletionSound();
 
-        if (NotificationSettings.NotificationEnabled)
+        if (NotificationSettings.NotificationEntity.NotificationEnabled)
             await NotifyTimerCompletion(pomodoroItem);
-
-        Log.Information("PomodoroItem {@pomocdoroItem}", pomodoroItem);
-
     }
 
     public async Task NotifyTimerCompletion(PomodoroItem pomodoroItem)
@@ -189,7 +184,7 @@
         var title = pomodoroItem.Status.Equals(PomodoroStatus.Pomodoro) ? "Pomodoro Complete!" : "Break Complete!";
         var body = pomodoroItem.Status.Equals(PomodoroStatus.Pomodoro) ? "Time to take a break!" : "Time to work!";
 
-        await _notificationService.InvokeNotificaionShow(title, body, "/images/myface_132.png",
+        await _notificationService.InvokeNotificationShow(title, body, "/images/myface_132.png",
         $"{pomodoroItem.NumberOfPomodoros}:{pomodoroItem.Status}:{pomodoroItem.Id}");
     }
 

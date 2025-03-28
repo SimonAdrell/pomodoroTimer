@@ -1,6 +1,4 @@
-using CoBySi.Pomodoro.Timer;
 using Microsoft.Extensions.Time.Testing;
-using NSubstitute;
 
 namespace CoBySi.Pomodoro.Tests;
 
@@ -23,6 +21,7 @@ public class PomodorHandlerTest
         {
             raised = true;
             totalNumberOfSecondsLeft = args.NumberOfSecondsLeft;
+            await Task.CompletedTask;
         };
 
         // Act  
@@ -34,7 +33,7 @@ public class PomodorHandlerTest
     }
 
     [Fact]
-    public void Start_WhenFinished_ShouleRaiseTimerFinnishedEvent()
+    public void Start_WhenFinished_ShouldRaiseTimerFinishedEvent()
     {
         // Arrange
         var timeProvider = new FakeTimeProvider();
