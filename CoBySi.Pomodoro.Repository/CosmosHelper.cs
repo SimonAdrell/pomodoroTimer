@@ -14,8 +14,8 @@ public class CosmosHelper
         SerializerOptions = new CosmosSerializationOptions { PropertyNamingPolicy = CosmosPropertyNamingPolicy.CamelCase },
     }
         );
-        await client.CreateDatabaseIfNotExistsAsync(settings.DatatabaseName);
-        var database = client.GetDatabase(settings.DatatabaseName);
+        await client.CreateDatabaseIfNotExistsAsync(settings.DatabaseName);
+        var database = client.GetDatabase(settings.DatabaseName);
         await database.CreateContainerIfNotExistsAsync(id: settings.ContainerName, partitionKeyPath: "/userId");
         return database.GetContainer(settings.ContainerName);
     }

@@ -15,13 +15,13 @@ public static class RepositoryServiceExtension
 
         ArgumentNullException.ThrowIfNull(cosmosSettings);
         ArgumentException.ThrowIfNullOrEmpty(cosmosSettings?.ConnectionString);
-        ArgumentException.ThrowIfNullOrEmpty(cosmosSettings?.DatatabaseName);
+        ArgumentException.ThrowIfNullOrEmpty(cosmosSettings?.DatabaseName);
 
         Log.Information("Adding db context {application}", nameof(PomodoroAuth));
         builder.Services.AddDbContextFactory<PomodoroAuth>(
                     options => options.UseCosmos(
                         connectionString: cosmosSettings.ConnectionString,
-                        databaseName: cosmosSettings.DatatabaseName,
+                        databaseName: cosmosSettings.DatabaseName,
                                 options =>
             {
                 // options.ConnectionMode(ConnectionMode.);
@@ -33,9 +33,9 @@ public static class RepositoryServiceExtension
         );
         if (cosmosSettings.Setup)
         {
-            Log.Information("Creating comsoms db {dbName}", cosmosSettings.DatatabaseName);
+            Log.Information("Creating comsoms db {dbName}", cosmosSettings.DatabaseName);
             var builder1 = new DbContextOptionsBuilder<PomodoroAuth>();
-            builder1.UseCosmos(cosmosSettings.ConnectionString, cosmosSettings.DatatabaseName);
+            builder1.UseCosmos(cosmosSettings.ConnectionString, cosmosSettings.DatabaseName);
 
             using var dbContext = new PomodoroAuth(builder1.Options);
             await dbContext.Database.EnsureCreatedAsync();
