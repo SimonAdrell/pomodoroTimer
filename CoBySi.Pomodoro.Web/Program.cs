@@ -9,10 +9,10 @@ using Microsoft.AspNetCore.Components.Authorization;
 using CoBySi.Pomodoro.Web.EmailService;
 using CoBySi.Pomodoro.Web.Settings;
 using CoBySi.Pomodoro.Web.Services;
-using CoBySi.Pomodoro.Web.Cache;
 using CoBySi.Pomodoro.Repository.Repositories;
 using AspNetCore.Identity.CosmosDb.Extensions;
 using CoBySi.Pomodoro.Repository.settings;
+using CoBySi.Pomodoro.Repository.Repositories.Cache;
 
 var builder = WebApplication.CreateBuilder(args);
 

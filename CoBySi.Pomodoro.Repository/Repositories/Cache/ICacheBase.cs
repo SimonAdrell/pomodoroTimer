@@ -1,4 +1,4 @@
-namespace CoBySi.Pomodoro.Web.Cache;
+namespace CoBySi.Pomodoro.Repository.Repositories.Cache;
 
 public interface ICacheBase<T>
 {

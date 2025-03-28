@@ -1,5 +1,5 @@
 using CoBySi.Pomodoro.Repository.Models;
-using CoBySi.Pomodoro.Web.Cache;
+using CoBySi.Pomodoro.Repository.Repositories.Cache;
 
 namespace CoBySi.Pomodoro.Repository.Repositories;
 

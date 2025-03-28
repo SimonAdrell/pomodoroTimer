@@ -1,7 +1,7 @@
 using CoBySi.Pomodoro;
 using CoBySi.Pomodoro.Repository.Models;
 using CoBySi.Pomodoro.Repository.Repositories;
-using CoBySi.Pomodoro.Web.Cache;
+using CoBySi.Pomodoro.Repository.Repositories.Cache;
 using CoBySi.Pomodoro.Web.Services;
 using Microsoft.Extensions.Options;
 using NSubstitute;
@@ -95,7 +95,7 @@ public class PomodoroSettingsServiceTest
         var userSettings = new UserSettings(userId)
         {
             NotificationEntity = null,
-            PommodoroSettings = userPomodoroSettingsEntity
+            PomodoroSettings = userPomodoroSettingsEntity
         };
 
         var pomodoroSettings = Substitute.For<IOptions<PomodoroSettings>>();

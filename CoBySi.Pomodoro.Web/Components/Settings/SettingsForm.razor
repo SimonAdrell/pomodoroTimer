@@ -120,7 +120,7 @@
                     NotificationSoundEnabled = Input.NotificationsEnabled,
                     SoundID = Input.SoundID
                 },
-                PommodoroSettings = new Repository.Models.PomodoroSettingsEntity()
+                PomodoroSettings = new Repository.Models.PomodoroSettingsEntity()
                 {
                     MinutesPerPomodoro = Input.PomodoroDuration,
                     MinutesPerShortBreak = Input.ShortBreakDuration,
@@ -164,10 +164,10 @@
             inputModel.PlaySound = settings.NotificationEntity.NotificationSoundEnabled;
             inputModel.SoundID = settings.NotificationEntity.SoundID;
         }
-        if (settings.PommodoroSettings is null)
+        if (settings.PomodoroSettings is null)
         {
             var defaultPomodoroSettings = pomodoroSettings.Value;
-            settings.PommodoroSettings = new Repository.Models.PomodoroSettingsEntity()
+            settings.PomodoroSettings = new Repository.Models.PomodoroSettingsEntity()
             {
                 MinutesPerPomodoro = defaultPomodoroSettings.MinutesPerPomodoro,
                 MinutesPerShortBreak = defaultPomodoroSettings.MinutesPerShortBreak,
@@ -175,12 +175,12 @@
                 PomodorosBeforeLongBreak = defaultPomodoroSettings.PomodorosBeforeLongBreak,
             };
         }
-        if (settings.PommodoroSettings is not null)
+        if (settings.PomodoroSettings is not null)
         {
-            inputModel.PomodoroDuration = settings.PommodoroSettings.MinutesPerPomodoro;
-            inputModel.ShortBreakDuration = settings.PommodoroSettings.MinutesPerShortBreak;
-            inputModel.LongBreakDuration = settings.PommodoroSettings.MinutesPerLongBreak;
-            inputModel.LongBreakInterval = settings.PommodoroSettings.PomodorosBeforeLongBreak;
+            inputModel.PomodoroDuration = settings.PomodoroSettings.MinutesPerPomodoro;
+            inputModel.ShortBreakDuration = settings.PomodoroSettings.MinutesPerShortBreak;
+            inputModel.LongBreakDuration = settings.PomodoroSettings.MinutesPerLongBreak;
+            inputModel.LongBreakInterval = settings.PomodoroSettings.PomodorosBeforeLongBreak;
         }
 
         return inputModel;

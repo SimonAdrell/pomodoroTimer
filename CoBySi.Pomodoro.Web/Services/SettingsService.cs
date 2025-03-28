@@ -1,6 +1,6 @@
 using CoBySi.Pomodoro.Repository.Models;
 using CoBySi.Pomodoro.Repository.Repositories;
-using CoBySi.Pomodoro.Web.Cache;
+using CoBySi.Pomodoro.Repository.Repositories.Cache;
 using CoBySi.Pomodoro.Web.Converter;
 using Microsoft.Extensions.Options;
 
@@ -26,7 +26,7 @@ public class SettingsService : ISettingsService
     private async Task<PomodoroSettings?> GetUserSettings(string userId, CancellationToken cancellationToken)
     {
         var userSettings = await _settingsRepository.GetUserSettingsByUserId(userId, cancellationToken);
-        return userSettings?.PommodoroSettings.ConvertToPomodoroSettings();
+        return userSettings?.PomodoroSettings.ConvertToPomodoroSettings();
     }
 
     public async Task<NotificationEntity?> GetNotificationSettingsAsync(string userId, CancellationToken cancellationToken)

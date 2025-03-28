@@ -1,5 +1,4 @@
 using CoBySi.Pomodoro.Repository.settings;
-using CoBySi.Pomodoro.Web.Cache;
 using Microsoft.Extensions.Caching.Distributed;
 
 namespace CoBySi.Pomodoro.Repository.Repositories.Cache;

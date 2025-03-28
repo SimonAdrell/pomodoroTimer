@@ -1,6 +1,6 @@
 using CoBySi.Pomodoro.Repository.Models;
 
-namespace CoBySi.Pomodoro.Web.Cache;
+namespace CoBySi.Pomodoro.Repository.Repositories.Cache;
 
 public interface ISettingsCache : ICacheBase<UserSettings>
 {
