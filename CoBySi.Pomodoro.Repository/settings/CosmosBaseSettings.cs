@@ -1,2 +1,3 @@
+namespace CoBySi.Pomodoro.Repository.settings;
 
-public abstract record CosmosBaseSettings(string ConnectionString, string DatabaseName, string ContainerName, bool Setup);
+public abstract record CosmosBaseSettings(string DatabaseName, string ContainerName, bool Setup);

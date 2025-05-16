@@ -13,9 +13,11 @@ using CoBySi.Pomodoro.Repository.Repositories;
 using AspNetCore.Identity.CosmosDb.Extensions;
 using CoBySi.Pomodoro.Repository.settings;
 using CoBySi.Pomodoro.Repository.Repositories.Cache;
+using CoBySi.Pomodoro.ServiceDefaults;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.AddServiceDefaults();
 
 Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Debug()
@@ -66,8 +68,7 @@ builder.Services.AddStackExchangeRedisCache(options =>
  {
      var redisSettings = new RedisSettings();
      builder.Configuration.GetSection("redis").Bind(redisSettings);
-
-     options.Configuration = redisSettings?.ConnectionString;
+     options.Configuration = builder.Configuration.GetConnectionString("cache") ?? throw new NullReferenceException("Redis connection string not found.");
      options.InstanceName = redisSettings?.InstanceName;
  });
 
@@ -107,4 +108,4 @@ app.UseAntiforgery();
 
 app.MapAdditionalIdentityEndpoints(); ;
 
-app.Run();
+await app.RunAsync();

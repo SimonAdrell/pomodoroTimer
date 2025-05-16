@@ -39,7 +39,7 @@ public class EmailSender : IEmailSender<PomodoroUser>
 
     public async Task SendPasswordResetLinkAsync(PomodoroUser user, string email, string resetLink)
     {
-        ArgumentException.ThrowIfNullOrEmpty(email, nameof(email));
+        ArgumentException.ThrowIfNullOrEmpty(email);
         ArgumentException.ThrowIfNullOrEmpty(user.UserName, nameof(user.UserName));
         ArgumentException.ThrowIfNullOrEmpty(_emailSettings.ResetLinkTemplateId, nameof(_emailSettings.ResetLinkTemplateId));
 
@@ -59,7 +59,7 @@ public class EmailSender : IEmailSender<PomodoroUser>
         if (response.StatusCode != System.Net.HttpStatusCode.OK &&
             response.StatusCode != System.Net.HttpStatusCode.Accepted)
         {
-            throw new Exception($"Failed to send email: {response.StatusCode}");
+            throw new InvalidOperationException($"Failed to send email: {response.StatusCode}");
         }
     }
 }
