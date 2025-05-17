@@ -1,11 +1,13 @@
 using CoBySi.Pomodoro.Repository.Models;
 using CoBySi.Pomodoro.Repository.settings;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 
 namespace CoBySi.Pomodoro.Repository.Repositories;
 
 public class SettingsRepository : CosmosRepositoryBase<UserSettings>, ISettingsRepository
 {
-    public SettingsRepository(SettingsDbSettings settings) : base(settings)
+    public SettingsRepository(IOptions<SettingsDbSettings> settings, IConfiguration configuration) : base(settings.Value, configuration)
     {
     }
 
@@ -16,6 +18,6 @@ public class SettingsRepository : CosmosRepositoryBase<UserSettings>, ISettingsR
 
     public async Task<UserSettings?> UpsertUserSetting(UserSettings userSettings, CancellationToken cancellationToken)
     {
-        return await Upsert(userSettings, cancellationToken); ;
+        return await Upsert(userSettings, cancellationToken);
     }
 }

@@ -8,7 +8,7 @@ public class PomodorHandler : IPomodorHandler
 {
     public event AsyncEventHandler<TimerChangedEventArgs>? TimerChangedAsync;
     private double? _totalNumberOfSeconds { get; set; }
-    private TimeProvider _timeProvider;
+    private readonly TimeProvider _timeProvider;
     private int _secondsElapsed;
     private ITimer? _pomodoroTimer;
     private PomodoroItem? _currentItem;
@@ -36,6 +36,9 @@ public class PomodorHandler : IPomodorHandler
         }
         else
         {
+            if (pomodoroSettings == null)
+                throw new ArgumentNullException(nameof(pomodoroSettings), "PomodoroSettings cannot be null.");
+
             _currentItem ??= new PomodoroItem
             {
                 Status = PomodoroStatus.Pomodoro,
@@ -58,7 +61,7 @@ public class PomodorHandler : IPomodorHandler
 
     private async Task Tick(PomodoroItem pomodoroItem)
     {
-        if (_secondsElapsed == _totalNumberOfSeconds)
+        if (_totalNumberOfSeconds.HasValue && Math.Abs(_secondsElapsed - _totalNumberOfSeconds.Value) < 0.0001)
         {
             StopTimer();
             pomodoroItem = TimerFinished(pomodoroItem);
@@ -78,7 +81,7 @@ public class PomodorHandler : IPomodorHandler
 
             _secondsElapsed++;
         }
-        Log.Information("Tick {id} Seconds elapseds {_secondsElapsed}", pomodoroItem.Id, _secondsElapsed);
+        Log.Information("Tick {Id} Seconds elapseds {_secondsElapsed}", pomodoroItem.Id, _secondsElapsed);
     }
 
     private PomodoroItem TimerFinished(PomodoroItem pomodoroItem)
@@ -122,7 +125,7 @@ public class PomodorHandler : IPomodorHandler
         {
             PomodoroStatus.ShortBreak => TimeSpan.FromMinutes(pomodoroSettings.MinutesPerShortBreak).TotalSeconds,
             PomodoroStatus.LongBreak => TimeSpan.FromMinutes(pomodoroSettings.MinutesPerLongBreak).TotalSeconds,
-            _ => (double)TimeSpan.FromMinutes(pomodoroSettings.MinutesPerPomodoro).TotalSeconds,
+            _ => TimeSpan.FromMinutes(pomodoroSettings.MinutesPerPomodoro).TotalSeconds,
         };
     }
 }

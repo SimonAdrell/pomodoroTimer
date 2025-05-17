@@ -25,7 +25,8 @@ public class PomodoroAuth : CosmosIdentityDbContext<PomodoroUser, IdentityRole, 
 
         var index = builder.Entity<PomodoroUser>()
             .HasIndex(u => new { u.NormalizedEmail }).Metadata;
-        var applicationUserType = builder.Entity<PomodoroUser>().Metadata.RemoveIndex(index.Properties);
+
+        builder.Entity<PomodoroUser>().Metadata.RemoveIndex(index.Properties);
 
 
         var userNameIndex = builder.Entity<PomodoroUser>()
@@ -36,8 +37,5 @@ public class PomodoroAuth : CosmosIdentityDbContext<PomodoroUser, IdentityRole, 
         var identityRoleNameIndex = builder.Entity<IdentityRole>()
                .HasIndex(u => new { u.NormalizedName }).Metadata;
         builder.Entity<IdentityRole>().Metadata.RemoveIndex(identityRoleNameIndex.Properties);
-        // Customize the ASP.NET Identity model and override the defaults if needed.
-        // For example, you can rename the ASP.NET Identity table names and more.
-        // Add your customizations after calling base.OnModelCreating(builder);
     }
 }

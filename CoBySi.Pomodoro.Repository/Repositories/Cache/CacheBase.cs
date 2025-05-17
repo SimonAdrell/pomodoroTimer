@@ -10,7 +10,7 @@ public abstract class CacheBase<T> : ICacheBase<T>
 
     protected CacheBase(IDistributedCache distributedCache, CacheSetting? cacheSetting)
     {
-        ArgumentNullException.ThrowIfNull(cacheSetting, nameof(cacheSetting));
+        ArgumentNullException.ThrowIfNull(cacheSetting);
         _distributedCache = distributedCache;
         _cacheSetting = cacheSetting;
     }

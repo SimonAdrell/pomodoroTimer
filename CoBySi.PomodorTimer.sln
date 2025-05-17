@@ -15,6 +15,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoBySi.Pomodoro.Web", "CoBy
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoBySi.Pomodoro.Tests", "Tests\CoBySi.Pomodoro.Tests\CoBySi.Pomodoro.Tests.csproj", "{17F537CD-3B95-4B11-BA9D-453964517505}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoBySi.Pomodoro.ServiceDefaults", "CoBySi.Pomodoro.ServiceDefaults\CoBySi.Pomodoro.ServiceDefaults.csproj", "{5AF6855A-A492-4117-80EA-CEF9C3D5F65A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoBySi.Pomodoro.AppHost", "CoBySi.Pomodoro.AppHost\CoBySi.Pomodoro.AppHost.csproj", "{9E3DE543-7675-4876-891B-1F1695402013}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -41,6 +45,14 @@ Global
 		{17F537CD-3B95-4B11-BA9D-453964517505}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{17F537CD-3B95-4B11-BA9D-453964517505}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{17F537CD-3B95-4B11-BA9D-453964517505}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5AF6855A-A492-4117-80EA-CEF9C3D5F65A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5AF6855A-A492-4117-80EA-CEF9C3D5F65A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5AF6855A-A492-4117-80EA-CEF9C3D5F65A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5AF6855A-A492-4117-80EA-CEF9C3D5F65A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9E3DE543-7675-4876-891B-1F1695402013}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9E3DE543-7675-4876-891B-1F1695402013}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9E3DE543-7675-4876-891B-1F1695402013}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9E3DE543-7675-4876-891B-1F1695402013}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

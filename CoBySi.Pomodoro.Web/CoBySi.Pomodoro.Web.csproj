@@ -8,7 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup> 
-    <ProjectReference Include="..\CoBySi.Pomodoro.Repository\CoBySi.Pomodoro.Repository.csproj" />
+    <ProjectReference Include="..\CoBySi.Pomodoro.Repository\CoBySi.Pomodoro.Repository.csproj" /> 
+    <ProjectReference Include="..\CoBySi.Pomodoro.ServiceDefaults\CoBySi.Pomodoro.ServiceDefaults.csproj" />
     <ProjectReference Include="..\CoBySi.Pomodoro\CoBySi.Pomodoro.csproj" />
   </ItemGroup>
 

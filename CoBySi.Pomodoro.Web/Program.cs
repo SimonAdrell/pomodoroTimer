@@ -13,18 +13,21 @@ using CoBySi.Pomodoro.Repository.Repositories;
 using AspNetCore.Identity.CosmosDb.Extensions;
 using CoBySi.Pomodoro.Repository.settings;
 using CoBySi.Pomodoro.Repository.Repositories.Cache;
+using CoBySi.Pomodoro.ServiceDefaults;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.AddServiceDefaults();
 
 Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Debug()
             .WriteTo.Console()
             .CreateLogger();
 
-Log.Information("Starting {application}", "CoBySi.Pomodoro.Web");
+Log.Information("Starting {Application}", "CoBySi.Pomodoro.Web");
 
 await builder.AddCosmosDb();
+
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
@@ -35,16 +38,18 @@ builder.Services.AddSingleton<ISettingsRepository, SettingsRepository>();
 builder.Services.Decorate<ISettingsRepository, CacheSettingsRepository>();
 
 builder.Services.AddSingleton<ISettingsService, SettingsService>();
+
+builder.Services.AddSingleton<ISettingsRepository, SettingsRepository>();
+builder.Services.Decorate<ISettingsRepository, CacheSettingsRepository>();
+
+builder.Services.AddSingleton<ISettingsService, SettingsService>();
 builder.Services.AddSingleton<ILocalStorageService, LocalStorageService>();
 
-builder.Services.Configure<PomodoroSettings>(builder.Configuration.GetSection("PomodoroSettings"));
-builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
-builder.Services.Configure<RedisSettings>(builder.Configuration.GetSection("redis"));
-
-builder.Services.AddSingleton(
-        builder.Configuration.GetSection("SettingsDbSettings").Get<SettingsDbSettings>() ??
-            throw new NullReferenceException());
-
+builder.Services
+    .Configure<PomodoroSettings>(builder.Configuration.GetSection("PomodoroSettings"))
+    .Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"))
+    .Configure<RedisSettings>(builder.Configuration.GetSection("redis"))
+    .Configure<SettingsDbSettings>(builder.Configuration.GetSection("SettingsDbSettings"));
 
 builder.Services.AddSingleton<ISettingsCache, SettingsCache>();
 
@@ -59,6 +64,7 @@ builder.Services.AddScoped<IdentityRedirectManager>();
 builder.Services.AddScoped<ILocalStorageService, LocalStorageService>();
 
 builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 
 builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
 
@@ -66,16 +72,15 @@ builder.Services.AddStackExchangeRedisCache(options =>
  {
      var redisSettings = new RedisSettings();
      builder.Configuration.GetSection("redis").Bind(redisSettings);
-
-     options.Configuration = redisSettings?.ConnectionString;
-     options.InstanceName = redisSettings?.InstanceName;
+     options.Configuration = builder.Configuration.GetConnectionString("cache") ??
+        throw new MissingFieldException("Redis cache string not found.");
+     options.InstanceName = redisSettings.InstanceName;
  });
-
 
 builder.Services.AddCosmosIdentity<PomodoroAuth, PomodoroUser, IdentityRole, string>(
       options => options.SignIn.RequireConfirmedAccount = true
     )
-    .AddDefaultUI() // Use this if Identity Scaffolding is in use
+    .AddDefaultUI()
     .AddEntityFrameworkStores<PomodoroAuth>()
     .AddSignInManager()
     .AddDefaultTokenProviders();
@@ -86,11 +91,9 @@ builder.Services.AddSingleton<IEmailSender<PomodoroUser>, EmailSender>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
@@ -105,6 +108,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.UseAntiforgery();
 
-app.MapAdditionalIdentityEndpoints(); ;
+app.MapAdditionalIdentityEndpoints();
 
-app.Run();
+await app.RunAsync();
