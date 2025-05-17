@@ -15,14 +15,14 @@ public class EmailSender : IEmailSender<PomodoroUser>
     public EmailSender(IOptions<EmailSettings> optionsAccessor)
     {
         _emailSettings = optionsAccessor.Value;
-        ArgumentException.ThrowIfNullOrEmpty(_emailSettings.Key, nameof(_emailSettings.Key));
+        ArgumentException.ThrowIfNullOrEmpty(_emailSettings.Key);
     }
 
     public async Task SendConfirmationLinkAsync(PomodoroUser user, string email, string confirmationLink)
     {
-        ArgumentException.ThrowIfNullOrEmpty(email, nameof(email));
-        ArgumentException.ThrowIfNullOrEmpty(user.UserName, nameof(user.UserName));
-        ArgumentException.ThrowIfNullOrEmpty(_emailSettings.ConfirmationTemplateId, nameof(_emailSettings.ConfirmationTemplateId));
+        ArgumentException.ThrowIfNullOrEmpty(email);
+        ArgumentException.ThrowIfNullOrEmpty(user.UserName);
+        ArgumentException.ThrowIfNullOrEmpty(_emailSettings.ConfirmationTemplateId);
 
         await SendEmailAsync(email, user.UserName, _emailSettings.ConfirmationTemplateId, "Confirm your email!", new { link = confirmationLink });
         Log.Information("Confirmation email sent");
@@ -30,9 +30,9 @@ public class EmailSender : IEmailSender<PomodoroUser>
 
     public async Task SendPasswordResetCodeAsync(PomodoroUser user, string email, string resetCode)
     {
-        ArgumentException.ThrowIfNullOrEmpty(email, nameof(email));
-        ArgumentException.ThrowIfNullOrEmpty(user.UserName, nameof(user.UserName));
-        ArgumentException.ThrowIfNullOrEmpty(_emailSettings.ResetCodeTemplateId, nameof(_emailSettings.ResetCodeTemplateId));
+        ArgumentException.ThrowIfNullOrEmpty(email);
+        ArgumentException.ThrowIfNullOrEmpty(user.UserName);
+        ArgumentException.ThrowIfNullOrEmpty(_emailSettings.ResetCodeTemplateId);
 
         await SendEmailAsync(email, user.UserName, _emailSettings.ResetCodeTemplateId, "Password reset code", new { link = resetCode });
     }
@@ -40,8 +40,8 @@ public class EmailSender : IEmailSender<PomodoroUser>
     public async Task SendPasswordResetLinkAsync(PomodoroUser user, string email, string resetLink)
     {
         ArgumentException.ThrowIfNullOrEmpty(email);
-        ArgumentException.ThrowIfNullOrEmpty(user.UserName, nameof(user.UserName));
-        ArgumentException.ThrowIfNullOrEmpty(_emailSettings.ResetLinkTemplateId, nameof(_emailSettings.ResetLinkTemplateId));
+        ArgumentException.ThrowIfNullOrEmpty(user.UserName);
+        ArgumentException.ThrowIfNullOrEmpty(_emailSettings.ResetLinkTemplateId);
 
         await SendEmailAsync(email, user.UserName, _emailSettings.ResetLinkTemplateId, "Password reset link", new { link = resetLink });
     }

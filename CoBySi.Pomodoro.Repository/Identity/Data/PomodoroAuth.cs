@@ -25,7 +25,8 @@ public class PomodoroAuth : CosmosIdentityDbContext<PomodoroUser, IdentityRole, 
 
         var index = builder.Entity<PomodoroUser>()
             .HasIndex(u => new { u.NormalizedEmail }).Metadata;
-        var applicationUserType = builder.Entity<PomodoroUser>().Metadata.RemoveIndex(index.Properties);
+
+        builder.Entity<PomodoroUser>().Metadata.RemoveIndex(index.Properties);
 
 
         var userNameIndex = builder.Entity<PomodoroUser>()
