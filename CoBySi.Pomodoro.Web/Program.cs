@@ -45,19 +45,11 @@ builder.Services.Decorate<ISettingsRepository, CacheSettingsRepository>();
 builder.Services.AddSingleton<ISettingsService, SettingsService>();
 builder.Services.AddSingleton<ILocalStorageService, LocalStorageService>();
 
-builder.Services.Configure<PomodoroSettings>(builder.Configuration.GetSection("PomodoroSettings"));
-builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
-builder.Services.Configure<RedisSettings>(builder.Configuration.GetSection("redis"));
-
-builder.Services.AddSingleton(
-        builder.Configuration.GetSection("SettingsDbSettings").Get<SettingsDbSettings>() ??
-            throw new NullReferenceException());
-
-
-builder.Services.AddSingleton(
-        builder.Configuration.GetSection("SettingsDbSettings").Get<SettingsDbSettings>() ??
-            throw new NullReferenceException());
-
+builder.Services
+    .Configure<PomodoroSettings>(builder.Configuration.GetSection("PomodoroSettings"))
+    .Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"))
+    .Configure<RedisSettings>(builder.Configuration.GetSection("redis"))
+    .Configure<SettingsDbSettings>(builder.Configuration.GetSection("SettingsDbSettings"));
 
 builder.Services.AddSingleton<ISettingsCache, SettingsCache>();
 
@@ -80,7 +72,8 @@ builder.Services.AddStackExchangeRedisCache(options =>
  {
      var redisSettings = new RedisSettings();
      builder.Configuration.GetSection("redis").Bind(redisSettings);
-     options.Configuration = builder.Configuration.GetConnectionString("cache") ?? throw new NullReferenceException("Redis connection string not found.");
+     options.Configuration = builder.Configuration.GetConnectionString("cache") ??
+        throw new MissingFieldException("Redis connection string not found.");
      options.InstanceName = redisSettings?.InstanceName;
  });
 

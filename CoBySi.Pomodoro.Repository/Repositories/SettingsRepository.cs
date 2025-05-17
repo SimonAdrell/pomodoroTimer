@@ -1,12 +1,13 @@
 using CoBySi.Pomodoro.Repository.Models;
 using CoBySi.Pomodoro.Repository.settings;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 
 namespace CoBySi.Pomodoro.Repository.Repositories;
 
 public class SettingsRepository : CosmosRepositoryBase<UserSettings>, ISettingsRepository
 {
-    public SettingsRepository(SettingsDbSettings settings, IConfiguration configuration) : base(settings, configuration)
+    public SettingsRepository(IOptions<SettingsDbSettings> settings, IConfiguration configuration) : base(settings.Value, configuration)
     {
     }
 
