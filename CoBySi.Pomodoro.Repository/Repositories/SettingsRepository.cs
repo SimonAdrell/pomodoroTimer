@@ -17,6 +17,6 @@ public class SettingsRepository : CosmosRepositoryBase<UserSettings>, ISettingsR
 
     public async Task<UserSettings?> UpsertUserSetting(UserSettings userSettings, CancellationToken cancellationToken)
     {
-        return await Upsert(userSettings, cancellationToken); ;
+        return await Upsert(userSettings, cancellationToken);
     }
 }
